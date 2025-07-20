@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { io, Socket } from "socket.io-client";
-import { BACKEND_URL } from "../Scripts/GetData";
 import { useUserAuthContext } from "./UserContext";
 import { fetchProfileDetails } from "../Scripts/FetchDetails";
+import { MAIN_BACKEND_URL } from "../Scripts/URL";
 
 
 interface SocketContextPayload {
@@ -28,7 +28,7 @@ export function useSocketContext() {
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
 
-    const socket: Socket = useMemo(() => io(BACKEND_URL, {
+    const socket: Socket = useMemo(() => io(MAIN_BACKEND_URL, {
         transports: ["websocket"],
         withCredentials: true
     }), []);

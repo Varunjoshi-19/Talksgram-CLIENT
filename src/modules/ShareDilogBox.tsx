@@ -1,11 +1,12 @@
 import { X } from "lucide-react";
 import styles from "../Styling/ShareDilog.module.css";
 import { useEffect, useState } from "react";
-import { BACKEND_URL, CreateAndShareMessage } from "../Scripts/GetData";
+import {  CreateAndShareMessage } from "../Scripts/GetData";
 import { searchAccount } from "../Components/ToMessage";
 import { fetchAllData, fetchSearchUser } from "../Scripts/FetchDetails";
 import messageStyles from "../Styling/ToMessage.module.css";
 import { useNavigate } from "react-router-dom";
+import { MAIN_BACKEND_URL } from "../Scripts/URL";
 
 interface ShareDilogBoxPayload {
 
@@ -149,7 +150,7 @@ function ShareDilogBox({ toogleOpenCloseButton, sharePostRefId, postOwnerId, pos
                             <div onClick={() => handleSelectedUser(JSON.stringify(account))} key={account._id} className={messageStyles.eachAccount} >
 
                                 <div id={messageStyles.profileImage}>
-                                    <img src={`${BACKEND_URL}/accounts/profileImage/${account._id}`} alt="_pic" width="100%" height="100%" />
+                                    <img src={`${MAIN_BACKEND_URL}/accounts/profileImage/${account._id}`} alt="_pic" width="100%" height="100%" />
                                 </div>
 
                                 <div>

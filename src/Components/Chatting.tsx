@@ -9,7 +9,7 @@ import { fetchChattedUserDetails, fetchAllData, fetchDetailsOfUserPost, fetchUse
 import LoadingScreen from './LoadingScreen.tsx';
 import {
     ProfileProps, InfoDataType, BufferedDataType, ChattedUserInfo, AdditionalDataType,
-    ShowFile, AudioData, Chat, BACKEND_URL
+    ShowFile, AudioData, Chat
 } from "../Scripts/GetData.ts";
 import { MAIN_BACKEND_URL } from '../Scripts/URL.ts';
 import { useSocketContext } from '../Context/SocketContext.tsx';
@@ -459,7 +459,7 @@ function Chatting() {
 
     async function savedChatToDatabases(chat: Chat) {
 
-        const response = await fetch(`${BACKEND_URL}/personal-chat/save-personal-chats`, {
+        const response = await fetch(`${MAIN_BACKEND_URL}/personal-chat/save-personal-chats`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -486,7 +486,7 @@ function Chatting() {
         })
 
 
-        const response = await fetch(`${BACKEND_URL}/personal-chat/additionalInfo-message`, {
+        const response = await fetch(`${MAIN_BACKEND_URL}/personal-chat/additionalInfo-message`, {
             method: "POST",
             body: formData
         });
@@ -503,7 +503,7 @@ function Chatting() {
         formData.append("audioData", JSON.stringify(ChatInfo));
         formData.append("audioFile", audioFile);
 
-        const response = await fetch(`${BACKEND_URL}/personal-chat/audioDataInfo-message`, {
+        const response = await fetch(`${MAIN_BACKEND_URL}/personal-chat/audioDataInfo-message`, {
             method: "POST",
             body: formData
         });
@@ -941,10 +941,10 @@ function Chatting() {
                                                 <div style={{ display: "flex", alignItems: "center", gap: '10px', padding: "5px" }} >
                                                     <img width="40px" height="40px"
                                                         style={{ borderRadius: "50%" }}
-                                                        src={`${BACKEND_URL}/accounts/profileImage/${chat.sharedContent.postOwnerId}`} alt="" />
+                                                        src={`${MAIN_BACKEND_URL}/accounts/profileImage/${chat.sharedContent.postOwnerId}`} alt="" />
                                                     <span>{chat.sharedContent.postOwnerName}</span>
                                                 </div>
-                                                <img onClick={() => handleGetPost(chat)} src={`${BACKEND_URL}/uploadPost/postImage/${chat.sharedContent.refId}`}
+                                                <img onClick={() => handleGetPost(chat)} src={`${MAIN_BACKEND_URL}/uploadPost/postImage/${chat.sharedContent.refId}`}
                                                     style={{ width: "100%", height: "100%", objectFit: 'contain' }}
                                                     alt="Image" />
 

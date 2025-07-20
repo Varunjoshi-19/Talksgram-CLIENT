@@ -1,4 +1,3 @@
-import { BACKEND_URL } from "./GetData";
 import { MAIN_BACKEND_URL } from "./URL";
 
 
@@ -41,7 +40,7 @@ export async function fetchProfileDetails(id = "") {
 
 export async function fetchOtherUserDetails(id: string) {
 
-    const response = await fetch(`${BACKEND_URL}/accounts/fetchOtherUser/${id}`, { method: "POST" });
+    const response = await fetch(`${MAIN_BACKEND_URL}/accounts/fetchOtherUser/${id}`, { method: "POST" });
     const result = await response.json();
 
     if (response.ok) {
@@ -169,7 +168,7 @@ export async function fetchDetailsOfUserPost(id: string) {
     let post = null;
     try {
 
-        const response = await fetch(`${BACKEND_URL}/uploadPost/fetch-single-post/${id}`);
+        const response = await fetch(`${MAIN_BACKEND_URL}/uploadPost/fetch-single-post/${id}`);
         const result = await response.json();
         if (response.ok) {
             post = result.post;
@@ -189,7 +188,7 @@ export async function fetchDetailsOfUserPost(id: string) {
 
 export async function fetchUserOnlineStatus(id: string) {
     try {
-        const response = await fetch(`${BACKEND_URL}/accounts/user-online-status/${id}`);
+        const response = await fetch(`${MAIN_BACKEND_URL}/accounts/user-online-status/${id}`);
         const result = await response.json();
         console.log(result);
         if (response.ok) return result.onlineStatus;

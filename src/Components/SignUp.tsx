@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import styles from "../Styling/Signup.module.css";
 import React, { useEffect, useState } from "react";
-import { BACKEND_URL } from "../Scripts/GetData";
+import { MAIN_BACKEND_URL } from "../Scripts/URL";
 
 function Signup() {
 
@@ -14,7 +14,6 @@ function Signup() {
 
     const navigate = useNavigate();
 
-    const URL = `${BACKEND_URL}/accounts/signup`;
 
     async function handleOnSignUp(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -22,7 +21,7 @@ function Signup() {
 
         const accountDetails = { email, password, fullname, username };
 
-        const response = await fetch(URL, {
+        const response = await fetch(`${MAIN_BACKEND_URL}/accounts/signup`, {
 
             method: "POST",
             headers: {
@@ -39,13 +38,13 @@ function Signup() {
             setError(null);
             setMessage(result.message);
             navigate("/accounts/login");
-          
+
         }
 
         if (!response.ok) {
             setMessage(null);
             setError(result.error);
-         
+
         }
 
     }
@@ -138,11 +137,11 @@ function Signup() {
                 <p>Get the app.</p>
                 <div className={styles.downloadLinks}>
                     <img
-                        
+
                         alt="Download from App Store"
                     />
                     <img
-                      
+
                         alt="Download from Google Play"
                     />
                 </div>
