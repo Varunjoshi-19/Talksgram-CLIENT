@@ -1,0 +1,317 @@
+.MainCenterContainer {
+    display: flex;
+    
+    position: absolute;
+    left: 20%;
+    width: 100vw;
+    height: 100vh;
+}
+
+.StoriesAndPostContainer {
+    display: flex;
+    flex-direction: column;
+    height: inherit;
+    width: 50%;
+}
+
+
+
+
+.storiesContainer {
+    
+    display: flex;
+    overflow: hidden;
+    padding : 20px;
+    height: auto;
+    gap: 10px;
+}
+
+.storiesContainer #eachStories {
+    border: 1px solid white;
+    flex-shrink: 0;
+    height: 80px;
+    width: 80px;
+    border-radius: 50%;
+    
+}
+
+
+
+.postsContainer {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    gap: 20px;
+    align-items: center;
+    margin-top: 20px;
+    overflow-x: hidden;
+    height: inherit;
+}
+
+#eachPostContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+    height: 900px;
+    width: 70%;
+}
+
+
+#eachPostContainer #mainPostImage { 
+    border-radius: 4px;
+    width: 100%;
+    height: 70%;
+    object-fit: contain;
+    border: 1px solid rgba(128, 128, 128, 0.562);
+}
+
+
+#eachPostContainer #headerInfo {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    height: 60px;
+}
+
+
+#description {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+
+.postsContainer::-webkit-scrollbar {
+    width: 8px;
+}
+
+.postsContainer::-webkit-scrollbar-thumb {
+    background-color: rgba(128, 128, 128, 0.5);
+    border-radius: 10px;
+}
+
+.profileAndSuggestions  { 
+    display: flex;
+    width: 400px;
+    flex-direction: column;
+    gap : 20px;
+    
+}
+
+.profileAndSuggestions .UserProfile {
+
+    margin-top: 30px;
+     display: flex;
+     gap : 10px;
+     margin-left: 20px;
+}
+
+.profileAndSuggestions .UserProfile .userImage {
+
+  
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    justify-content: center;
+    height : 40px;
+    width: 40px;
+    border-radius: 50%;
+}
+
+.profileAndSuggestions .suggestions { 
+  
+    display: flex;
+    flex-direction: column;
+    gap : 20px;
+     justify-content: "space-between";
+    margin-left: 20px;
+}
+
+.profileAndSuggestions .suggestions .suggestedAccount {
+     display: flex;
+     gap  : 20px;
+     cursor: pointer;
+    
+}
+
+.profileAndSuggestions .suggestions .suggestedAccount #suggestedProfile{ 
+
+ border : 1px solid white;   
+ display: flex;
+ align-items: center;
+ overflow: hidden;
+ justify-content: center;
+ height : 40px;
+ width: 40px;
+ border-radius: 50%;
+
+
+}
+
+
+
+
+
+
+
+.topLogos {
+    display: none;
+}
+
+
+.searchBar #inputBox {
+    width: 90%;
+    outline: none;
+    border: none;
+    background-color: rgb(43, 43, 43);
+    font-size: 15px;
+    color: white;
+}
+
+.searchBar #inputBox:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px rgba(43, 43, 43) inset !important;
+    -webkit-text-fill-color: white !important;
+    border: none !important;
+    outline: none !important;
+    background-color: rgb(43, 43, 43) !important;
+}
+
+
+
+
+
+
+@media (max-width : 1330px) {
+
+    .MainCenterContainer {
+
+        left: 25%;
+        display: flex;
+        position: absolute;
+
+        width: 100vw;
+        height: 100vw;
+
+    }
+
+}
+
+@media (max-width : 1247px) {
+    .MainCenterContainer {
+      left : 10%;
+
+    }
+
+    .postsContainer { 
+        gap : 10px;
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .profileAndSuggestions  { 
+        display: none;
+    }
+
+    #eachPostContainer  { 
+        width: 70%;
+        height : 750px;
+        padding : 5px;
+    }
+
+    #eachPostContainer #mainPostImage { 
+        border-radius: 4px;
+        width: 80%;
+        height: 80%;
+        object-fit: contain;
+        border: 1px solid rgba(128, 128, 128, 0.562);
+    }
+
+
+
+}
+
+@media (max-width : 764px) {
+
+    .MainCenterContainer {
+        display: flex;
+        padding : 2px;
+        overflow-x: hidden;
+        position: absolute;
+        left: 0%;
+        width: 100vw;
+        height: 1100px;
+    }
+
+    .storiesContainer { 
+        padding :10px;
+        width: 100vw;
+      overflow-x: scroll;
+    }
+
+    .storiesContainer #eachStories {
+        border: 1px solid white;
+        flex-shrink: 0;
+        height: 65px;
+        width: 65px;
+        border-radius: 50%;
+        
+    }
+    
+
+    .profileAndSuggestions  { 
+        display: none;
+    }
+
+    .postsContainer { 
+        gap : 10px;
+
+        width: 100vw;
+        height: 100vh;
+    }
+
+    #eachPostContainer  { 
+        width: 95%;
+        height : 750px;
+        padding : 5px;
+    }
+
+    #eachPostContainer #mainPostImage { 
+        border-radius: 4px;
+        width: 100%;
+        height: 80%;
+        object-fit: contain;
+        border: 1px solid rgba(128, 128, 128, 0.562);
+    }
+
+
+
+    .topLogos {
+        display: flex;
+        position: relative;
+        border-bottom: 1px solid gray;
+        padding: 5px 5px;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: center;
+
+    }
+
+    .topLogos .searchBar {
+        display: flex;
+
+        gap: 20px;
+        width: 40%;
+        margin-left: 10px;
+        padding: 10px 10px;
+        align-items: center;
+        border-radius: 10px;
+        color: whitesmoke;
+        font-weight: bold;
+        background-color: rgb(43, 43, 43);
+    }
+
+}
+

@@ -1,0 +1,77 @@
+.EditProfileContainer {
+
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    z-index: 3;
+    background-color: black;
+    opacity: 0.6;
+
+}
+
+#editProfile {
+
+    display: flex;
+    flex-direction: column;
+  align-items: center;
+    border-radius: 10px;
+    position: fixed;
+    width: 500px;
+    height: 70%;
+    top: 50%;
+    left: 50%;
+    z-index: 4;
+    opacity: 1;
+    background-color: rgb(46, 46, 46);
+    transform: translate(-50%, -50%);
+
+
+
+}
+
+#profileIconEdit {
+     
+   
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    justify-content: center;
+    height : 70px;
+    width: 70px;
+    border-radius: 50%;
+   
+}
+/* width: "150px", position: "relative", left: "69%", bottom : "10px", padding: "7px 7px", fontWeight: "bolder",
+                            cursor: "pointer", backgroundColor: "#1877F2", color: "white", border: "none", borderRadius: "5px", fontSize: "1.02rem" */
+
+#changeButton {
+     
+width: 150px;
+position: relative;
+left : 69%;
+bottom : 10px;
+padding : 7px 7px;
+font-weight: bolder;
+cursor: pointer;
+background-color: #1877F2;
+color : white;
+border : none;
+border-radius: 5px;
+   
+}
+
+
+@media (max-width : 452px) {
+    
+    #editProfile { 
+          width: 450px;
+
+    }
+
+
+    #changeButton { 
+        left : 60%;
+    }
+
+}

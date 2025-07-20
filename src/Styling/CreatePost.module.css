@@ -1,0 +1,46 @@
+.UploadPostContainer {
+
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    z-index: 5;
+    background-color: black;
+    opacity: 0.6;
+
+
+
+}
+
+#uploadPost {
+
+    display: flex;
+    border-radius: 10px;
+    position: fixed;
+    width: 550px;
+    height: 70%;
+    top: 50%;
+    left: 50%;
+    z-index: 5;
+    opacity: 1;
+    background-color: rgb(46, 46, 46);
+    transform: translate(-50%, -50%);
+    animation: moveToleft 200ms forwards ease-in;
+
+}
+
+
+@media (max-width : 800px) {
+    #uploadPost {
+        width: 400px;
+    }
+}
+
+
+@keyframes moveToleft {
+
+    0% {
+        left: 20%
+    }
+
+}

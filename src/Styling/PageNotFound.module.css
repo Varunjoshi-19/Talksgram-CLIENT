@@ -1,0 +1,46 @@
+/* PageNotFound.module.css */
+.notFoundContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff;
+  }
+  
+  .notFoundTitle {
+    font-size: 6rem;
+    font-weight: 900;
+    margin: 0;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .notFoundSubtitle {
+    font-size: 1.5rem;
+    margin: 20px 0 10px;
+  }
+  
+  .notFoundDescription {
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+  
+  .notFoundButton {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background: #ff5e57;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .notFoundButton:hover {
+    background: #ff3e3e;
+  }
+  

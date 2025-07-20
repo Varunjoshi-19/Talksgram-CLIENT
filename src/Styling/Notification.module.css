@@ -1,0 +1,124 @@
+.NotificationContainer {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  width: 35%;
+  height: 100vh;
+  left: 40%;
+  align-items: center;
+  background-color: rgb(0, 0, 0);
+  z-index: 1;
+  border-right: 1px solid white;
+  animation: slideInFromLeft 0.1s ease-in forwards;
+
+}
+
+
+.NotificationContainer .AllNotifications {
+
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  margin-left: 30px;
+  width: 90%;
+  height: 90%;
+  gap: 20px;
+  top: 10%;
+  font-size: 14px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+}
+
+.NotificationContainer .AllNotifications .eachNotification {
+
+  display: flex;
+  height: 10%;
+  width: 100%;
+  gap: 5px;
+  border-radius: 10px;
+  align-items: center;
+  transition: background-color 200ms;
+
+}
+
+.AllNotifications #profileImage {
+  border: 1px solid white;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  margin-left: 2px;
+
+}
+
+.NotificationContainer .AllNotifications .eachNotification:hover {
+
+  background-color: rgba(112, 112, 112, 0.507);
+  cursor: pointer;
+}
+
+
+.AllNotifications::-webkit-scrollbar {
+  width: 8px;
+}
+
+.AllNotifications::-webkit-scrollbar-thumb {
+  background-color: rgba(150, 150, 150, 0.788);
+  border-radius: 10px;
+}
+
+
+
+@media (max-width : 764px) {
+
+
+.NotificationContainer {
+   display: none;
+}
+  
+}
+
+@media (max-width : 1250px) {
+
+  .NotificationContainer {
+    left: 0%;
+    align-items: center;
+    animation: slideInFromLeft1 0.1s ease-in forwards;
+
+  }
+
+
+
+
+  @keyframes slideInFromLeft1 {
+    0% {
+      left: 0%;
+      opacity: 0;
+    }
+
+    100% {
+      left: 5%;
+      opacity: 1;
+    }
+  }
+}
+
+
+
+
+
+@keyframes slideInFromLeft {
+  0% {
+    left: 15%;
+    opacity: 0;
+  }
+
+  100% {
+    left: 20%;
+    opacity: 1;
+  }
+}

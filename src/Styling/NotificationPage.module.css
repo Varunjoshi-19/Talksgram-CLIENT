@@ -1,0 +1,108 @@
+/* NotificationPage.module.css */
+
+.NotificContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #000000;
+    min-height: 100vh;
+    gap: 30px;
+}
+
+.NotificContainer p {
+    color: #f0f0f0;
+    font-weight: bolder;
+    font-size: 1.25rem;
+    text-align: center;
+}
+
+.AllNotific {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.eachNotific {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #494949;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.eachNotific:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+#profileImage {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #1877F2;
+}
+
+#profileImage img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
+.eachNotific p {
+    flex: 1;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+    text-align: center;
+}
+
+.eachNotific button {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.eachNotific button:first-of-type {
+    background-color: #1877F2;
+    color: white;
+}
+
+.eachNotific button:first-of-type:hover {
+    background-color: #145dbf;
+}
+
+.eachNotific button:last-of-type {
+    background-color: rgba(112, 112, 112, 0.507);
+    color: white;
+}
+
+.eachNotific button:last-of-type:hover {
+    background-color: #666;
+}
+
+
+
+.message  {
+
+     width: 300px;
+     display: flex;
+     align-items: center;
+     font-size: 15px;
+     height: 80px;
+     justify-content: center;
+     border-radius: 20px;
+     word-break: break-all;
+     flex: auto  0 0;
+}
