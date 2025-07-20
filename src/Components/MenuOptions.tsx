@@ -53,7 +53,7 @@ const MenuOptions: React.FC<MenuOptionProps> = ({ profile }) => {
 
 
   const navigate = useNavigate();
-  const { user, dispatch } = useUserAuthContext();
+  const {  dispatch } = useUserAuthContext();
   const { searchBarVisible, toogleVisiblility, setSearchInput } = useToogle();
   const { socket, notification } = useSocketContext();
 

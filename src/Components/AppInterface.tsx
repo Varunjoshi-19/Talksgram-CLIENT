@@ -12,8 +12,6 @@ import { useNavigate } from "react-router-dom";
 import { useToogle } from "../Context/ToogleContext"
 import CommentBox from "./CommentBox";
 import { MAIN_BACKEND_URL } from "../Scripts/URL.ts";
-import { fetchAllData } from "../Scripts/FetchDetails.ts";
-import { CreateAndShareMessage } from "../Scripts/GetData.ts";
 import ShareDilogBox from "../modules/ShareDilogBox.tsx";
 
 export interface ProfileInfo {
@@ -399,7 +397,7 @@ function AppInterface() {
 
           <div className={styles.storiesContainer}>
 
-            {stories.map((each, index) => (
+            {stories.map((_, index) => (
 
               <div key={index} id={styles.eachStories} ></div>
 

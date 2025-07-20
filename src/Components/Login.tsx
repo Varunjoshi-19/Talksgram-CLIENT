@@ -6,13 +6,13 @@ import { MAIN_BACKEND_URL } from "../Scripts/URL.ts";
 import { useSocketContext } from "../Context/SocketContext.tsx";
 import { fetchProfileDetails } from "../Scripts/FetchDetails.ts";
 
-interface Info {
+// interface Info {
 
-    id: string,
-    username: string,
-    email: string
+//     id: string,
+//     username: string,
+//     email: string
 
-}
+// }
 
 
 
