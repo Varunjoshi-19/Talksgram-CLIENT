@@ -17,6 +17,7 @@ import { useToogle } from "../Context/ToogleContext";
 import LoadingScreen from "./LoadingScreen";
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
 import { useSocketContext } from "../Context/SocketContext";
+import { useChatContext } from "../Context/ChattedUserContext";
 
 
 interface MenuOptionProps {
@@ -53,11 +54,10 @@ const MenuOptions: React.FC<MenuOptionProps> = ({ profile }) => {
 
 
   const navigate = useNavigate();
-  const {  dispatch } = useUserAuthContext();
+  const { dispatch } = useUserAuthContext();
   const { searchBarVisible, toogleVisiblility, setSearchInput } = useToogle();
   const { socket, notification } = useSocketContext();
-
-
+  const { messageCount } = useChatContext();
 
 
 
@@ -78,7 +78,7 @@ const MenuOptions: React.FC<MenuOptionProps> = ({ profile }) => {
       fetchAllRequests();
     }
 
-  }, [notification])
+  }, [notification]);
 
 
   async function fetchAllRequests() {
@@ -205,9 +205,8 @@ const MenuOptions: React.FC<MenuOptionProps> = ({ profile }) => {
       <div className={styles.leftOptions}>
 
 
-
         <ul id={styles.options}>
-          <li id={styles.logo} > <span>TALKSGRAM</span></li>
+          <li><span>TALKSGRAM</span></li>
           <li onClick={NavigateToHomePage}> <FontAwesomeIcon icon={faHome} fontSize={"1.5rem"} />  <span>Home</span></li>
           <li id={styles.logo} onClick={OpenSearchBar} > <FontAwesomeIcon icon={faSearch} fontSize={"1.5rem"} />
             <span>Search</span>
@@ -216,17 +215,31 @@ const MenuOptions: React.FC<MenuOptionProps> = ({ profile }) => {
 
           <li><FontAwesomeIcon icon={faCompass} fontSize={"1.5rem"} /> <span>Explore</span></li>
           <li onClick={handleOpenReels} >  <FontAwesomeIcon icon={faPlayCircle} fontSize={"1.5rem"} /> <span>Reels</span></li>
-          <li onClick={NavigateToMessagePage} > <FontAwesomeIcon icon={faCommentDots} fontSize={"1.5rem"} /><span>Messages</span></li>
+
+          <li style={{ position: "relative" }} onClick={NavigateToMessagePage} >
+            <FontAwesomeIcon icon={faCommentDots} fontSize={"1.5rem"} />
+            <span>Messages</span>
+            {messageCount > 0 &&
+              <span style={{
+                position: "absolute", width: "23px", height: "23px",
+                borderRadius: "50%", left: "25px", bottom: "37%", backgroundColor: "red", display: "flex", alignItems: "center"
+                , justifyContent: "center", fontWeight: "bolder"
+              }} >{messageCount}
+              </span>
+            }
+          </li>
+
           <li id={styles.logo} onClick={OpenNotificationBar} > <FontAwesomeIcon icon={faBell} fontSize={"1.5rem"} /><span>Notification
 
           </span>
             {notificCount > 0 && <span style={{
               position: "absolute", width: "25px", height: "25px"
               , borderRadius: "50%", left: "20px", bottom: "37%", backgroundColor: "red", display: "flex", alignItems: "center"
-              , justifyContent: "center", fontWeight: "bold"
+              , justifyContent: "center", fontWeight: "bolder"
             }} >{notificCount}
             </span>}
           </li>
+
           <li onClick={UploadNewPostOption} > <FontAwesomeIcon icon={faPlusCircle} fontSize={"1.5rem"} /><span>Create</span></li>
           <li onClick={NavigateToProfilePage} > <FontAwesomeIcon icon={faUser} fontSize={"1.5rem"} /><span>Profile</span></li>
           <li id={styles.logoutButton} onClick={Logout}  > <FontAwesomeIcon icon={faSignOutAlt} fontSize={"1.5rem"} /><span>Logout</span></li>

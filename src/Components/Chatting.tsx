@@ -5,16 +5,18 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { faEdit, faInfoCircle, faSmile, faPause, faMicrophone, faImage, faHeart, faImages, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useRef, useState } from "react";
-import { fetchChattedUserDetails, fetchAllData, fetchDetailsOfUserPost, fetchUserOnlineStatus } from "../Scripts/FetchDetails.ts";
+import { fetchAllData, fetchDetailsOfUserPost, fetchUserOnlineStatus } from "../Scripts/FetchDetails.ts";
 import LoadingScreen from './LoadingScreen.tsx';
 import {
-    ProfileProps, InfoDataType, BufferedDataType, ChattedUserInfo, AdditionalDataType,
-    ShowFile, AudioData, Chat
+    ProfileProps, InfoDataType, BufferedDataType, AdditionalDataType,
+    ShowFile, AudioData, Chat,
 } from "../Scripts/GetData.ts";
 import { MAIN_BACKEND_URL } from '../Scripts/URL.ts';
 import { useSocketContext } from '../Context/SocketContext.tsx';
 import CommentBox from './CommentBox.tsx';
 import LocalImagesAndVideos from '../modules/LocalImagesAndVideos.tsx';
+import { Play } from 'lucide-react';
+import ChattedUser from '../modules/ChattedUser.tsx';
 
 
 
@@ -35,7 +37,6 @@ function Chatting() {
     const [messageInputValue, setMessageInputValue] = useState<string>("");
     const [otherUserDetails, setUserDetails] = useState<ProfileProps | any>();
     const [myProfileDetails, setMyProfileDetails] = useState<ProfileProps | any>();
-    const [AllChattedUsers, setChattedUsers] = useState<ChattedUserInfo[]>([]);
     const [AllChats, setAllChats] = useState<Chat[]>([]);
     const [chatId, setChatId] = useState<string | any>("");
     const [chatLoaded, setChatLoaded] = useState<boolean>(false);
@@ -73,8 +74,9 @@ function Chatting() {
     const [userId, setUserId] = useState<string>("");
     const [currentPostLikes, setCurrentPostLikes] = useState<number>(0);
     const [currentPostDate, setCurrentPostDate] = useState<string>("");
-    const [selectedImageItem, setImageItem] = useState<string>("");
-    const [displayImageSelected, setImageSelected] = useState<boolean>(false);
+    const [selectedItem, setItem] = useState<string>("");
+    const [displaySelectedItem, setSelectedItem] = useState<boolean>(false);
+    const [typeOfItem, setTypeOfItem] = useState<string>("");
     const [userOnlineStatus, setUserOnlineStatus] = useState<boolean>(false);
 
     const recordedAudioRef = useRef<HTMLAudioElement>(null);
@@ -117,6 +119,7 @@ function Chatting() {
             socket.off("user-online");
             socket.off("offline");
         };
+
     }, [id, socket]);
 
 
@@ -133,12 +136,12 @@ function Chatting() {
 
         socket.on('chat-receive', (info) => {
 
-
             const ChatInfo: Chat = {
                 userId: myProfileDetails?._id,
                 otherUserId: otherUserDetails?._id,
                 chatId: info.chatId,
-                username: info.username,
+                senderUsername: info.senderUsername,
+                receiverUsername: otherUserDetails.username,
                 initateTime: Date.now().toString(),
 
             }
@@ -160,6 +163,9 @@ function Chatting() {
                 ChatInfo.temporaryAddData.push(tempData);
             }
 
+            if (info.sharedContent) {
+                ChatInfo.sharedContent = info.sharedContent;
+            }
 
             if (info.AdditionalInfoData) {
 
@@ -235,6 +241,8 @@ function Chatting() {
 
 
     useEffect(() => {
+       
+         document.body.style.overflowY = "hidden";
 
         async function fetchAllBothUserData() {
             const data = await fetchAllData(id!);
@@ -262,31 +270,15 @@ function Chatting() {
 
 
     useEffect(() => {
-
         fetchChatsFromDatabase();
-
-        // if (lastMessageRef.current) {
-        //     lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
-        // }
-
     }, [chatId]);
 
-
-    useEffect(() => {
-
-        async function fetchChattedUser() {
-            const users = await fetchChattedUserDetails(myProfileDetails?._id);
-            setChattedUsers(users);
-        }
-
-        fetchChattedUser();
-
-    }, [myProfileDetails]);
 
 
     // ------ other handling functions -------  // 
 
     function handleSendMessage() {
+
 
         if (messageInputValue.length > 0) {
 
@@ -295,7 +287,8 @@ function Chatting() {
                 // for others 
                 const InfoData: InfoDataType = {
                     chat: messageInputValue,
-                    username: myProfileDetails?.username,
+                    senderUsername: myProfileDetails?.username,
+                    receiverUsername: otherUserDetails.username,
                     chatId: chatId,
 
 
@@ -305,7 +298,8 @@ function Chatting() {
                     userId: myProfileDetails?._id,
                     otherUserId: otherUserDetails?._id,
                     chatId: chatId,
-                    username: myProfileDetails?.username || '',
+                    senderUsername: myProfileDetails?.username || '',
+                    receiverUsername: otherUserDetails.username || '',
                     initateTime: Date.now().toString(),
                     chat: messageInputValue,
                 };
@@ -319,7 +313,8 @@ function Chatting() {
 
                     const MInfoData: InfoDataType = {
                         AdditionalInfoData: bufferedData,
-                        username: myProfileDetails?.username,
+                        senderUsername: myProfileDetails?.username,
+                        receiverUsername: otherUserDetails.username,
                         chatId: chatId,
 
                     }
@@ -328,7 +323,8 @@ function Chatting() {
                         userId: myProfileDetails?._id,
                         otherUserId: otherUserDetails?._id,
                         chatId: chatId,
-                        username: myProfileDetails?.username || '',
+                        senderUsername: myProfileDetails?.username || '',
+                        receiverUsername: otherUserDetails.username || '',
                         initateTime: Date.now().toString(),
                         AdditionalData: multipleItemSelected
                     };
@@ -343,18 +339,18 @@ function Chatting() {
                 setMultipleItemsSelected([]);
                 setShowMultipleItems([]);
                 setBufferedData([]);
-                return;
 
             }
 
         }
 
-        if (multipleItemSelected.length > 0) {
+        else if (multipleItemSelected.length > 0) {
 
 
             const InfoData: InfoDataType = {
                 AdditionalInfoData: bufferedData,
-                username: myProfileDetails?.username,
+                senderUsername: myProfileDetails?.username,
+                receiverUsername: otherUserDetails.username,
                 chatId: chatId,
 
             }
@@ -363,7 +359,8 @@ function Chatting() {
                 userId: myProfileDetails?._id,
                 otherUserId: otherUserDetails?._id,
                 chatId: chatId,
-                username: myProfileDetails?.username || '',
+                senderUsername: myProfileDetails?.username || '',
+                receiverUsername: otherUserDetails.username || '',
                 initateTime: Date.now().toString(),
                 AdditionalData: multipleItemSelected
             };
@@ -375,17 +372,17 @@ function Chatting() {
             setMultipleItemsSelected([]);
             setShowMultipleItems([]);
             setBufferedData([]);
-            return;
 
 
         }
 
-        if (audioFileBlob) {
+        else if (audioFileBlob) {
             console.log("you have sended audioBlob file bro");
             const InfoData: InfoDataType = {
 
                 audioData: audioDataInfo,
-                username: myProfileDetails?.username,
+                senderUsername: myProfileDetails?.username,
+                receiverUsername: otherUserDetails.username,
                 chatId: chatId,
 
 
@@ -395,7 +392,8 @@ function Chatting() {
                 userId: myProfileDetails?._id,
                 otherUserId: otherUserDetails?._id,
                 chatId: chatId,
-                username: myProfileDetails?.username || '',
+                senderUsername: myProfileDetails?.username || '',
+                receiverUsername: otherUserDetails.username || '',
                 initateTime: Date.now().toString(),
                 AdditionalData: audioDataInfo
             };
@@ -411,8 +409,28 @@ function Chatting() {
             setMultipleItemsSelected([]);
             setShowMultipleItems([]);
             setBufferedData([]);
-            return;
         }
+
+        if (myProfileDetails._id === otherUserDetails._id) return;
+
+        const reelTimeData = {
+            senderId: myProfileDetails._id,
+            receiverId: otherUserDetails._id,
+            userId: myProfileDetails._id,
+            chatId: chatId,
+            yourMessage: false,
+            checkName: myProfileDetails.username,
+            username: myProfileDetails.username,
+            seenStatus: false,
+            initateTime: Date.now() - 2 * 1000,
+            recentChat: messageInputValue || null,
+            unseenCount: 0
+
+        }
+
+        console.log("after all message this exectued");
+        socket.emit("new-message", reelTimeData);
+
 
     }
 
@@ -511,13 +529,6 @@ function Chatting() {
         if (response.ok) console.log("Chat has been saved to the database");
     }
 
-    function handleEnableMessageTab(value: string) {
-        const user = JSON.parse(value);
-        // reset everything
-        ResetEverythingOnDom();
-        navigate(`/Personal-chat/${user.userId}`);
-
-    }
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
 
@@ -666,15 +677,12 @@ function Chatting() {
 
 
 
-
-
-
     return (
         <>
             {!myProfileDetails && !otherUserDetails ? <LoadingScreen /> : <div>
 
                 <MenuOptions profile={myProfileDetails} />
-                {displayImageSelected && <LocalImagesAndVideos image={selectedImageItem} setCloseImage={setImageSelected} />}
+                {displaySelectedItem && <LocalImagesAndVideos item={selectedItem} type={typeOfItem} setCloseImage={setSelectedItem} />}
 
                 {toogleCommentBox && <CommentBox id={postId} toogleBox={closeCommentInfoBox}
                     userInfoF={ProvideInfoToCommentBox}
@@ -700,27 +708,9 @@ function Chatting() {
                         <p>Requests</p>
                     </div>
 
-                    <div style={{ gap: "20px" }} className={styles.MessagesContainer}>
 
-                        {AllChattedUsers &&
+                    <ChattedUser ResetEverythingOnDom={ResetEverythingOnDom} />
 
-                            AllChattedUsers.map((user, index) => (
-                                <div key={index} onClick={() => handleEnableMessageTab(JSON.stringify(user))} style={{ gap: "20px" }} id={styles.userMessage}>
-                                    <div id={styles.userIcon}>
-                                        <img src={`${MAIN_BACKEND_URL}/accounts/profileImage/${user.userId}`} width="100%" height="100%" alt="_image" />
-                                    </div>
-
-                                    <div>
-                                        <p>{user.username}</p>
-                                        <p>{user.chat}</p>
-                                    </div>
-
-                                </div>
-
-                            ))
-                        }
-
-                    </div>
 
                 </div>
 
@@ -807,7 +797,7 @@ function Chatting() {
                             AllChats.map((chat, index) => (
                                 <div ref={chatContainerRef}
                                     key={index}
-                                    className={`${styles.message} ${chat.username === myProfileDetails?.username ? styles.me : styles.other
+                                    className={`${styles.message} ${chat.senderUsername === myProfileDetails?.username ? styles.me : styles.other
                                         }`}
                                 >
 
@@ -817,7 +807,7 @@ function Chatting() {
                                         <>
                                             <p
                                                 className={
-                                                    chat.username === myProfileDetails?.username ? styles.myTextMessage : styles.otherMessage
+                                                    chat.senderUsername === myProfileDetails?.username ? styles.myTextMessage : styles.otherMessage
                                                 }
                                             >
                                                 {chat.chat}
@@ -835,32 +825,44 @@ function Chatting() {
                                     {chat.temporaryAddData &&
 
 
-                                        <div id={styles.AdditionalData}>
+                                        <div style={{ display: "flex", padding: "3px", margin: "3px", width: "auto", maxWidth: "500px", gap: "8px", flexWrap: "wrap", justifyContent: `${chat.senderUsername === myProfileDetails?.username ? "flex-end" : "flex-start"}` }} >
+
                                             {chat.temporaryAddData?.map((each) => {
                                                 if (videoExtension.includes(each.extensionName)) {
 
                                                     return (
-                                                        <video key={each.actualBlob} src={each.actualBlob} controls
-                                                            style={{ width: "200px", objectFit: "cover", objectPosition: "center" }}
-                                                            className={chat.username === myProfileDetails?.username ? styles.myMessage : styles.otherMessage}
-                                                        />
+                                                        <div style={{
+                                                            display: "flex", justifyContent: "flex-end", borderRadius: "10px", position: "relative",
+                                                            width: "250px", marginBottom: "4px", cursor: "pointer"
+                                                        }}>
+                                                            <video key={each.actualBlob} src={each.actualBlob}
+                                                                id={`eachVideo-${chat._id}`} onClick={() => {
+                                                                    setTypeOfItem("video");
+                                                                    setItem(each.actualBlob);
+                                                                    setSelectedItem(prev => !prev);
+                                                                }}
+                                                                style={{ width: "100%", objectFit: "cover", }}
+                                                            />
+                                                            <span style={{ position: "absolute", top: "15px", right: "15px" }}>
+                                                                <Play fill='white' />
+                                                            </span>
+                                                        </div>
                                                     );
                                                 } else if (audioExtension.includes(each.extensionName)) {
 
                                                     return (
                                                         <audio key={each.actualBlob} src={each.actualBlob} controls
-                                                            className={chat.username === myProfileDetails?.username ? styles.myMessage : styles.otherMessage}
                                                         />
                                                     );
                                                 } else if (imageExtension.includes(each.extensionName)) {
 
                                                     return (
                                                         <img onClick={() => {
-                                                            setImageItem(each.actualBlob);
-                                                            setImageSelected(prev => !prev);
+                                                            setTypeOfItem("image");
+                                                            setItem(each.actualBlob);
+                                                            setSelectedItem(prev => !prev);
                                                         }} key={each.actualBlob} src={each.actualBlob} alt="image"
-                                                            style={{ width: "200px", objectFit: "contain", objectPosition: "center", cursor: "pointer" }}
-                                                            className={chat.username === myProfileDetails?.username ? styles.myMessage : styles.otherMessage}
+                                                            style={{ borderRadius: "10px", width: "300px", objectFit: "contain", objectPosition: "center", cursor: "pointer" }}
                                                         />
                                                     );
                                                 }
@@ -881,18 +883,33 @@ function Chatting() {
                                         chat.AdditionalData &&
 
 
-
-                                        <div id={styles.AdditionalData}>
+                                        <div style={{ display: "flex", width: "auto", maxWidth: "500px", gap: "8px", flexWrap: "wrap", justifyContent: `${chat.senderUsername === myProfileDetails?.username ? "flex-end" : "flex-start"}` }} >
                                             {chat.AdditionalData?.map((each: AdditionalDataType) => {
                                                 if (videoExtension.includes(each.contentType)) {
                                                     return (
-                                                        <video
-                                                            key={each._id}
-                                                            src={`${MAIN_BACKEND_URL}/Personal-chat/render-message-items/${chat._id}/${each._id}`}
-                                                            controls
-                                                            style={{ width: "200px", objectFit: "contain", objectPosition: "center" }}
-                                                            className={chat.username === myProfileDetails?.username ? styles.myMessage : styles.otherMessage}
-                                                        />
+                                                        <div
+                                                            style={{
+                                                                display: "flex", justifyContent: "flex-end", borderRadius: "10px", position: "relative",
+                                                                width: "250px", marginBottom: "4px", cursor: "pointer",
+                                                            }}
+                                                        >
+                                                            <video
+                                                                key={each._id}
+                                                                src={`${MAIN_BACKEND_URL}/Personal-chat/render-message-items/${chat._id}/${each._id}`}
+                                                                id={`eachVideo-${each._id}`} onClick={() => {
+                                                                    setTypeOfItem("video");
+                                                                    setSelectedItem(prev => !prev);
+                                                                    setItem(`${MAIN_BACKEND_URL}/Personal-chat/render-message-items/${chat._id}/${each._id}`);
+
+                                                                }}
+
+
+                                                                style={{ width: "100%", objectFit: "cover", }}
+                                                            />
+                                                            <span style={{ position: "absolute", top: "15px", right: "15px" }}>
+                                                                <Play fill='white' />
+                                                            </span>
+                                                        </div>
                                                     );
                                                 } else if (audioExtension.includes(each.contentType)) {
                                                     return (
@@ -901,20 +918,20 @@ function Chatting() {
                                                             src={`${MAIN_BACKEND_URL}/Personal-chat/render-message-items/${chat._id}/${each._id}`}
                                                             controls
                                                             style={{ width: "200px", objectFit: "contain", objectPosition: "center" }}
-                                                            className={chat.username === myProfileDetails?.username ? styles.myMessage : styles.otherMessage}
                                                         />
                                                     );
                                                 } else if (imageExtension.includes(each.contentType)) {
                                                     return (
                                                         <img onClick={() => {
-                                                            setImageItem(`${MAIN_BACKEND_URL}/Personal-chat/render-message-items/${chat._id}/${each._id}`);
-                                                            setImageSelected(true);
+                                                            setTypeOfItem("image");
+                                                            setItem(`${MAIN_BACKEND_URL}/Personal-chat/render-message-items/${chat._id}/${each._id}`);
+                                                            setSelectedItem(true);
                                                         }}
                                                             key={each._id}
                                                             src={`${MAIN_BACKEND_URL}/Personal-chat/render-message-items/${chat._id}/${each._id}`}
                                                             alt="image"
-                                                            style={{ width: "200px", objectFit: "contain", objectPosition: "center", cursor: "pointer" }}
-                                                            className={chat.username === myProfileDetails?.username ? styles.myMessage : styles.otherMessage}
+                                                            style={{ marginBottom: "5px", borderRadius: "10px", width: "300px", objectFit: "contain", objectPosition: "center", cursor: "pointer" }}
+
                                                         />
                                                     );
                                                 }
@@ -922,9 +939,6 @@ function Chatting() {
                                                 return null;
                                             })}
                                         </div>
-
-
-
 
 
                                     }

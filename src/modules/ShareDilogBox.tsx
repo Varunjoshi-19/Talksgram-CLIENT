@@ -1,12 +1,12 @@
 import { X } from "lucide-react";
 import styles from "../Styling/ShareDilog.module.css";
 import { useEffect, useState } from "react";
-import {  CreateAndShareMessage } from "../Scripts/GetData";
 import { searchAccount } from "../Components/ToMessage";
-import { fetchAllData, fetchSearchUser } from "../Scripts/FetchDetails";
+import { fetchSearchUser } from "../Scripts/FetchDetails";
 import messageStyles from "../Styling/ToMessage.module.css";
-import { useNavigate } from "react-router-dom";
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
+import { useGeneralContext } from "../Context/GeneralContext";
+import { useNavigate } from "react-router-dom";
 
 interface ShareDilogBoxPayload {
 
@@ -20,9 +20,10 @@ function ShareDilogBox({ toogleOpenCloseButton, sharePostRefId, postOwnerId, pos
 
     const [searchValue, setSearchValue] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
-    const navigate = useNavigate();
+    const { handleSharePost } = useGeneralContext();
     const [searchAccounts, setSearchedAccounts] = useState<searchAccount[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<string>("");
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -71,27 +72,13 @@ function ShareDilogBox({ toogleOpenCloseButton, sharePostRefId, postOwnerId, pos
 
     }
 
-    async function handleSharePost() {
-
-        console.log(selectedUserId, sharePostRefId);
-        const otherUserId = selectedUserId;
-        const data = await fetchAllData(otherUserId);
-        const { success } = data;
-        if (!success) {
-            navigate("/error");
-            return;
-        }
-
-        const shareDataInfo = { ...data, refId: sharePostRefId, userId: postOwnerId, username: postOwnerName };
-        const status: any = await CreateAndShareMessage(shareDataInfo);
-        if (!status.success) {
-            alert("failed to share this post!");
-            return;
-        }
-
-        toogleOpenCloseButton(false);
-
-
+    async function sharePost() {
+        await handleSharePost(selectedUserId,
+            sharePostRefId,
+            toogleOpenCloseButton,
+            navigate,
+            postOwnerId,
+            postOwnerName);
     }
 
 
@@ -175,7 +162,7 @@ function ShareDilogBox({ toogleOpenCloseButton, sharePostRefId, postOwnerId, pos
                     }
 
                 </div>
-                <button onClick={handleSharePost} id={messageStyles.chatButton}>Share</button>
+                <button onClick={sharePost} id={messageStyles.chatButton}>Share</button>
 
             </div >
 

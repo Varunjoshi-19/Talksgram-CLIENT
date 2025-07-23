@@ -31,17 +31,15 @@ interface AllPostsProps {
         userId: string;
         userAccId: string;
     }
-    createdAt : string;
+    createdAt: string;
 }
 
 
 
 function Profile() {
 
-    const [post, setPosts] = useState<string>("1px solid");
+    const [selectedOption, setSelectedOption] = useState<string>("POST");
     const [uploadPostPopUp, setUploadPostPopUp] = useState<boolean>(false);
-    const [saved, setSaved] = useState<string>("none");
-    const [tagged, setTagged] = useState<string>("none");
     const [allPosts, setAllPosts] = useState<AllPostsProps[]>([]);
     const [profileInfo, setProfileInfo] = useState<ProfileInfo>();
     const [enableEditProfile, setEnableEditProfile] = useState<boolean>(false);
@@ -49,30 +47,11 @@ function Profile() {
     const [userId, setUserId] = useState<string>("");
     const [toogleCommentBox, setCommentBox] = useState<boolean>(false);
     const [selectedPostUsername, setSelectedPostUsername] = useState<string>("");
-    const [currentLikes , setCurrentLikes] = useState<number>(0);
-    const [createdAtTime , setCreatedAt] = useState<string>("");
+    const [currentLikes, setCurrentLikes] = useState<number>(0);
+    const [createdAtTime, setCreatedAt] = useState<string>("");
 
     let id: string;
 
-    function toogleBar(bar: string) {
-
-        if (bar == "post") {
-            setPosts("1px solid white");
-            setSaved("none");
-            setTagged("none");
-        }
-        else if (bar == "saved") {
-            setPosts("none");
-            setSaved("1px solid white");
-            setTagged("none");
-        }
-        else {
-            setPosts("none");
-            setSaved("none");
-            setTagged("1px solid white");
-        }
-
-    }
 
     function UploadNewPostOption() {
         setUploadPostPopUp(c => !c);
@@ -83,8 +62,8 @@ function Profile() {
         setEnableEditProfile(c => !c);
     }
 
-    function handleOpenCommentBox(id: string, username: string, userId: string , currentLikes : number , createdAt : string) {
-        
+    function handleOpenCommentBox(id: string, username: string, userId: string, currentLikes: number, createdAt: string) {
+
         setCurrentLikes(currentLikes);
         setCreatedAt(createdAt);
         setPostId(id);
@@ -192,11 +171,11 @@ function Profile() {
             {profileInfo != null && <MenuOptions profile={profileInfo} />}
 
             {enableEditProfile && <EditProfile profileInfo={profileInfo} s={handleEditProfile} />}
-            {toogleCommentBox && 
-            <CommentBox id={postId} 
-            toogleBox={closeCommentInfoBox} 
-            userInfoF={ProvideInfoToCommentBox} currentLikes={currentLikes} 
-            createdAt={createdAtTime}/>
+            {toogleCommentBox &&
+                <CommentBox id={postId}
+                    toogleBox={closeCommentInfoBox}
+                    userInfoF={ProvideInfoToCommentBox} currentLikes={currentLikes}
+                    createdAt={createdAtTime} />
             }
 
             <div className={styles.profileContainer} >
@@ -255,92 +234,72 @@ function Profile() {
                 <div className={styles.postContainer} >
 
                     <div >
-                        <span onClick={() => toogleBar("post")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${post}` }} >POSTS</span>
-                        <span onClick={() => toogleBar("saved")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${saved}` }} >SAVED</span>
-                        <span onClick={() => toogleBar("tagged")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${tagged}` }} >TAGGED</span>
+                        <span onClick={() =>  setSelectedOption("POST")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${selectedOption == "POST" ?  "1px solid white" : "none" }` }} >POSTS</span>
+                        <span onClick={() =>  setSelectedOption("SAVED")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${selectedOption == "SAVED" ?  "1px solid white" : "none" }` }} >SAVED</span>
+                        <span onClick={() =>  setSelectedOption("TAGGED")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${selectedOption == "TAGGED" ?  "1px solid white" : "none" }` }} >TAGGED</span>
                     </div>
 
 
-                    {post == "none" ?
 
-
-                        <div>nothing</div>
-
-                        :
-
-
-                        allPosts.length > 0 ?
-
-
-                            <div className={styles.allPostsContainer} >
-
-                                {allPosts.map((post, index) => (
-
-
-
-                                    <div onClick={() => handleOpenCommentBox(post._id, profileInfo.username, post.author.userId , post.postLike , post.createdAt )} key={index} 
-                                    className={styles.eachPost}>
-
-                                        <img src={`${MAIN_BACKEND_URL}/uploadPost/postImage/${post?._id}`} 
-                                         style={{ width : "100%" , height : "100%", objectFit: "contain" }}
-                                        alt="image" />
-
-                                        <div id={styles.likeAndComment} >
-                                            <p style={{ display: "flex", gap: "5px" }} >{post.postLike}<FontAwesomeIcon icon={faThumbsUp} /> </p>
-                                            <p style={{ display: "flex", gap: "5px" }} >{post.postComment}<FontAwesomeIcon icon={faComment} /> </p>
-                                        </div>
-                                    </div>
-
-
-
-
-
-
-                                ))}
-
-                            </div>
-
-
-
-                            :
-
-
-                            <div style={{ display: "flex", gap: "15px", flexDirection: "column", alignItems: "center", }} >
-
-                                <div id={styles.cameraIcon}>
-                                    <FontAwesomeIcon icon={faCamera} size="3x" />
-
-                                </div>
-
-                                <p style={{ fontSize: "25px", fontWeight: "bolder" }} >Share photos</p>
-                                <p >when you share photos ,they will appear on your profile</p>
-                                <p onClick={() => setUploadPostPopUp(true)} style={{ color: "#1877F2", fontWeight: "bolder", cursor: "pointer" }} >Share your first photo</p>
-
-                            </div>
-                    }
 
 
                 </div>
 
 
+                {selectedOption === "POST" &&
+
+                 <div style={{  position : "relative" , left : "10%"  }}> 
+                 {
+                       allPosts.length > 0 ?
+
+                    <div className={styles.allPostsContainer} >
+
+                        {allPosts.map((post, index) => (
+
+
+
+                            <div onClick={() => handleOpenCommentBox(post._id, profileInfo.username, post.author.userId, post.postLike, post.createdAt)} key={index}
+                                className={styles.eachPost}>
+
+                                <img src={`${MAIN_BACKEND_URL}/uploadPost/postImage/${post?._id}`}
+                                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                                    alt="image" />
+
+                                <div id={styles.likeAndComment} >
+                                    <p style={{ display: "flex", gap: "5px" }} >{post.postLike}<FontAwesomeIcon icon={faThumbsUp} /> </p>
+                                    <p style={{ display: "flex", gap: "5px" }} >{post.postComment}<FontAwesomeIcon icon={faComment} /> </p>
+                                </div>
+                            </div>
 
 
 
 
 
 
+                        ))}
+
+                    </div>
+                    :
+                    <div style={{ display: "flex", gap: "15px", flexDirection: "column", alignItems: "center", }} >
+
+                        <div id={styles.cameraIcon}>
+                            <FontAwesomeIcon icon={faCamera} size="3x" />
+
+                        </div>
+
+                        <p style={{ fontSize: "25px", fontWeight: "bolder" }} >Share photos</p>
+                        <p >when you share photos ,they will appear on your profile</p>
+                        <p onClick={() => setUploadPostPopUp(true)} style={{ color: "#1877F2", fontWeight: "bolder", cursor: "pointer" }} >Share your first photo</p>
+
+                    </div>
+                 }
+                 </div>
+
+                }
 
 
-
-
-
-
-
-
-
-
-
-
+                {selectedOption === "SAVED"  && <div>NO SAVED</div>}
+                {selectedOption === "TAGGED" && <div>NO TAGGED</div>}
 
 
 

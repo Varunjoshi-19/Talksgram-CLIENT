@@ -76,8 +76,8 @@ export async function fetchChattedUserDetails(id: string) {
     const result = await response.json();
 
     if (response.ok) {
-
-        return result.users;
+        const userMap = new Map(result);
+        return userMap;
     }
 
     if (!response.ok) {
@@ -197,4 +197,30 @@ export async function fetchUserOnlineStatus(id: string) {
     catch (error) {
         return false;
     }
+}
+
+export async function seenAllChats(senderId: string, receiverId: string) {
+    console.log("seen chat fired");
+    const response = await fetch(`${MAIN_BACKEND_URL}/Personal-chat/seen-chats/${senderId}/${receiverId}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    const result = await response.json();
+    if (response.ok) console.log(result);
+
+
+    return;
+}
+
+
+export async function fetchProfileLocalStorage() : Promise<any>  {
+    const profile = localStorage.getItem("profile-details");
+    if (!profile) throw new Error("No profile exists!");
+    
+    const parsedProfile = JSON.parse(profile);
+    console.log(parsedProfile._id);
+    return parsedProfile;
 }

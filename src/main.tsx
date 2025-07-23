@@ -4,16 +4,23 @@ import { AuthContextProvider } from './Context/UserContext.tsx'
 import { ToggleProvider } from './Context/ToogleContext.tsx'
 import "./Styling/global.css"
 import { SocketProvider } from './Context/SocketContext.tsx'
+import { ChatContextProvider } from './Context/ChattedUserContext.tsx'
+import { GeneralContextProvider } from './Context/GeneralContext.tsx'
 createRoot(document.getElementById('root')!).render(
-  <AuthContextProvider>
-  <ToggleProvider>
-  <SocketProvider>
+  <GeneralContextProvider>
+    <AuthContextProvider>
+      <ToggleProvider>
+        <ChatContextProvider>
+          <SocketProvider>
 
 
-    <App />
- 
 
-  </SocketProvider>
-  </ToggleProvider>
-  </AuthContextProvider>,
+            <App />
+
+
+          </SocketProvider>
+        </ChatContextProvider>
+      </ToggleProvider>
+    </AuthContextProvider>,
+  </GeneralContextProvider>
 )

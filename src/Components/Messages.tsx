@@ -6,20 +6,18 @@ import { faEdit, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from "react";
 import ToMessage from "./ToMessage";
 import { useNavigate } from "react-router-dom";
-import { fetchProfileDetails, fetchChattedUserDetails } from "../Scripts/FetchDetails.ts";
+import { fetchProfileDetails  } from "../Scripts/FetchDetails.ts";
 
 
 import { ProfileInfo } from "../Components/Profile.tsx";
-import { ChattedUserInfo } from "../Scripts/GetData.ts";
-import { MAIN_BACKEND_URL } from "../Scripts/URL.ts";
+import ChattedUser from "../modules/ChattedUser.tsx";
 
 
 
 function Messages() {
 
    const [ToMessagePopUp, setToMessagePopUp] = useState<boolean>(false);
-   const [profileDetails, setProfileDetails] = useState<ProfileInfo  | any>();
-   const [AllChattedUsers, setChattedUsers] = useState<ChattedUserInfo[]>();
+   const [profileDetails, setProfileDetails] = useState<ProfileInfo | any>();
    const navigate = useNavigate();
 
 
@@ -33,26 +31,13 @@ function Messages() {
       ProfileDetails();
    }, []);
 
-   useEffect(() => {
 
-      async function fetchChattedUser() {
-         const users = await fetchChattedUserDetails(profileDetails?._id);
-         setChattedUsers(users);
-      }
-
-      fetchChattedUser();
-
-   }, [profileDetails]);
-
-   async function redirectToChattingPage(otherUserInfo: string){ // stringify data from to message file
-
-      // generate chat id and redirect them to the page
+   async function redirectToChattingPage(otherUserInfo: string) { 
 
       const parsedOtherUserInfo = JSON.parse(otherUserInfo);
       const otherProfileId = parsedOtherUserInfo._id;
 
       navigate(`/Personal-chat/${otherProfileId}`);
-
 
    }
 
@@ -61,18 +46,11 @@ function Messages() {
    }
 
 
-   function handleEnableMessageTab(value: string) {
-      const user = JSON.parse(value);
-      navigate(`/Personal-chat/${user.userId}`);
-   }
-
-
-
    return (
       <>
          {ToMessagePopUp && <ToMessage toogleButton={handleMessageButton} EnableMessageTab={redirectToChattingPage} />}
 
-         <MenuOptions  profile={profileDetails} />
+         <MenuOptions profile={profileDetails} />
 
          <div className={styles.allMessages} >
 
@@ -93,35 +71,13 @@ function Messages() {
                <p>Requests</p>
             </div>
 
-            <div style={{ gap: "20px" }} className={styles.MessagesContainer}>
 
-               {AllChattedUsers &&
-
-                  AllChattedUsers.map((user, index) => (
-                     <div key={index}  onClick={() => handleEnableMessageTab(JSON.stringify(user))} style={{ gap: "20px" }} id={styles.userMessage}>
-                        <div id={styles.userIcon}>
-                           <img src={`${MAIN_BACKEND_URL}/accounts/profileImage/${user.userId}`} width="100%" height="100%" alt="_image" />
-                        </div>
-
-                        <div>
-                           <p>{user.username}</p>
-                           <p>{user.chat}</p>
-                        </div>
-
-                     </div>
-
-                  ))
-               }
-
-
-
-
-            </div>
+            <ChattedUser />
 
          </div>
 
 
-         <div  className={styles.sendMessage}>
+         <div className={styles.sendMessage}>
 
             <div id={styles.messageIcon} >
                <FontAwesomeIcon icon={faPaperPlane} size="2x" />

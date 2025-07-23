@@ -3,15 +3,7 @@ import { MAIN_BACKEND_URL } from "./URL";
 
 
 
-export interface ChattedUserInfo {
 
-    chatId: string | any,
-    userId: string,
-    otherUserId: string,
-    username: string,
-    chat: string
-
-}
 
 
 export interface ProfileProps {
@@ -31,7 +23,8 @@ export type ShowFile = {
 
 export type InfoDataType = {
     chat?: string,
-    username: string
+    senderUsername: string,
+    receiverUsername: string,
     chatId: string,
     audioData?: AudioData | null;
     AdditionalInfoData?: BufferedDataType[];
@@ -55,15 +48,16 @@ export interface Chat {
     userId: string | any,
     otherUserId: string | any,
     chatId: string | any;
-    username: string;
+    senderUsername: string;
+    receiverUsername: string,
     initateTime: string;
     chat?: string;
     temporaryAddData?: ShowFile[];
     AdditionalData?: any;
     sharedContent?: {
         type: "post" | "reel",
-        postOwnerId : string,
-        postOwnerName : string,
+        postOwnerId: string,
+        postOwnerName: string,
         refId: string,
         previewText?: string
     };
@@ -75,6 +69,18 @@ export type BufferedDataType = {
     extension: string,
 }
 
+
+export interface ChattedUserPayload {
+    chatId: string,
+    userId: string,
+    yourMessage: boolean,
+    checkName: string,
+    username: string,
+    initateTime?: string,
+    seenStatus: string,
+    recentChat?: string,
+    unseenCount: number
+}
 
 
 export function formattedPostTime(postedTime: string) {
@@ -109,28 +115,45 @@ function convertMonths(month: number): string {
 }
 
 
-export async function CreateAndShareMessage(data: any) {
+export function handleTimeFormating(previousTime: number) {
 
-    const { senderDetails, receiverDetails, chatId, refId , userId , username } = data;
+    const timeNow = Date.now();
+    let timeAgo;
+    const seconds = Math.floor((timeNow - previousTime) / 1000);
 
-    const sharedInfo: Chat = {
-        userId: senderDetails._id,
-        otherUserId: receiverDetails._id,
-        chatId: chatId,
-        initateTime: Date.now().toString(),
-        username: senderDetails.username || "",
-        sharedContent: {
-            type: "post",
-            postOwnerId : userId,
-            postOwnerName : username,
-            refId: refId,
-            previewText: "this is the shared post!"
-        }
+    if (seconds < 60) {
+        timeAgo = `${seconds} sec`;
+        return timeAgo;
     }
+    const minutes = Math.floor(seconds / 60);
+
+    if (minutes < 60) {
+        timeAgo = `${minutes} min`;
+        return timeAgo;
+    }
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+        timeAgo = `${hours} hr`;
+        return timeAgo;
+    }
+
+    const days = Math.floor(hours / 24);
+    if (days == 1) {
+        timeAgo = `${days} day`;
+        return timeAgo;
+    }
+    else {
+        timeAgo = `${days} days`
+        return timeAgo;
+    }
+
+}
+
+export async function CreateAndShareMessage(shareDataInfo: any, sharedInfo: any) {
 
 
     try {
-        const response = await fetch(`${MAIN_BACKEND_URL}/uploadPost/share-post/${refId}`, {
+        const response = await fetch(`${MAIN_BACKEND_URL}/uploadPost/share-post/${shareDataInfo.refId}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -149,5 +172,17 @@ export async function CreateAndShareMessage(data: any) {
         return { success: false, message: error };
     }
 
+
+}
+
+
+export const CountMessages = (users: any) => {
+    let count = 0;
+
+    Array.from(users.values()).forEach((each: any) => {
+        count += each.unseenCount;
+    })
+
+    return count;
 
 }

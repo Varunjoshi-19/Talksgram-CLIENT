@@ -119,7 +119,7 @@ const Notification: React.FC<NotificationProps> = ({ AllNotifications, setAllNot
                             </div>
 
                             <p>
-                                {notification.usernameOf    }
+                                {notification.usernameOf}
                             </p>
 
                             <div style={{ display: "flex", gap: "10px", marginLeft: "0%" }} >

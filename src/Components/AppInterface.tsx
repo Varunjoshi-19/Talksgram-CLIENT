@@ -2,7 +2,7 @@ import styles from "../Styling/AppInterface.module.css";
 import MenuOptions from "./MenuOptions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faThumbsUp, faComment, faShareAlt, faSearch, faBell
+  faSearch, faBell
 } from "@fortawesome/free-solid-svg-icons";
 
 
@@ -13,6 +13,8 @@ import { useToogle } from "../Context/ToogleContext"
 import CommentBox from "./CommentBox";
 import { MAIN_BACKEND_URL } from "../Scripts/URL.ts";
 import ShareDilogBox from "../modules/ShareDilogBox.tsx";
+import { Heart, MessageCircle, Send } from 'lucide-react';
+import { ACTIONS, useUserAuthContext } from "../Context/UserContext.tsx";
 
 export interface ProfileInfo {
   _id: string,
@@ -24,13 +26,14 @@ export interface ProfileInfo {
   following: number
 };
 
-interface AllPostsProps {
+export interface AllPostsProps {
 
   _id: string;
   authorName: string;
   likeStatus: boolean;
   postLike: number;
   postComment: number;
+  postShare: number;
   postDescription: string;
   createdAt: string,
   author: {
@@ -57,13 +60,14 @@ function AppInterface() {
   const [toogleShareDilogBox, setToogleShareDilogBox] = useState<boolean>(false);
   const [sharePostRefId, setSharePostRefId] = useState<string>("");
   const [postOwnerId, setPostOwnerId] = useState<string>("");
-  const [postUsername , setPostUserName] = useState<string>("");
+  const [postUsername, setPostUserName] = useState<string>("");
   const stories = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
 
   const navigate = useNavigate();
 
 
   const { toogleVisiblility, setSearchInput, searchInput } = useToogle();
+  const { dispatch } = useUserAuthContext();
 
   useEffect(() => {
 
@@ -77,10 +81,13 @@ function AppInterface() {
         const result = await response.json();
 
         if (response.ok) {
-          console.log("this is the user profile", result.userProfile);
-          setProfileInfo(result.userProfile);
-        } else {
+          const { email, followers, following, post, userAccId, username, _id, createdAt, fullname } = result.userProfile;
 
+          const dataToStore: any = { email, followers, following, post, userAccId, username, _id, createdAt, fullname };
+
+          setProfileInfo(dataToStore);
+          dispatch({ type: ACTIONS.SET_PROFILE, payload: dataToStore });
+          localStorage.setItem("profile-details", JSON.stringify(dataToStore))
         }
       }
     }
@@ -218,8 +225,6 @@ function AppInterface() {
 
   async function handleClickLike(id: string, likeStatus: boolean) {
 
-
-
     const idInfo = {
       postId: id,
       userId: profileInfo?._id
@@ -306,7 +311,7 @@ function AppInterface() {
     return info;
   }
 
-  function handleSharePost(post : AllPostsProps) {
+  function handleSharePost(post: AllPostsProps) {
 
     setToogleShareDilogBox(prev => !prev);
     setSharePostRefId(post._id);
@@ -425,21 +430,23 @@ function AppInterface() {
 
                   <div style={{ cursor: "pointer" }} id={styles.description}>
 
-                    <div style={{ display: "flex", gap: "10px", fontSize: "1.5rem" }} >
-                      <span><FontAwesomeIcon onClick={() => handleClickLike(post?._id, post?.likeStatus)} icon={faThumbsUp}
-                        style={{ color: `${post?.likeStatus ? "BD0553" : "white"}` }} /></span>
-                      <span>
-                        <FontAwesomeIcon icon={faComment}
-                          onClick={() => handleOpenCommentBox(post?._id, post?.authorName,
-                            post?.author.userId, post.postLike, post.createdAt)} />
-                      </span>
-                      <span onClick={() => {
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "1.5rem" }} >
 
-                      }} ><FontAwesomeIcon icon={faShareAlt}  onClick={() => handleSharePost(post)} /></span>
+                      <Heart stroke={`${post.likeStatus ? "red" : "white"}`} fill={`${post.likeStatus ? "red" : "none"}`} onClick={() => handleClickLike(post?._id, post?.likeStatus)} />
+
+                      <span style={{ fontSize: "16px" }}>{post?.postLike}</span>
+
+                      <MessageCircle onClick={() => handleOpenCommentBox(post?._id, post?.authorName,
+                        post?.author.userId, post.postLike, post.createdAt)} />
+
+                      <span style={{ fontSize: "16px" }}>{post.postComment}</span>
+
+                      <Send onClick={() => handleSharePost(post)} />
+                      <span style={{ fontSize: "16px" }}>{post.postShare}</span>
+
                     </div>
 
                     <div style={{ display: "flex", flexDirection: "column" }} >
-                      <p style={{ fontWeight: "bolder" }}>{post?.postLike} {post.postLike > 1 ? "likes" : "like"}</p>
                       <p style={{ marginBottom: "10px" }}>{post?.postDescription}</p>
                     </div>
 

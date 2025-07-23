@@ -6,8 +6,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { fetchOtherUserDetails, fetchProfileDetails } from "../Scripts/FetchDetails.ts";
 import { MAIN_BACKEND_URL } from '../Scripts/URL.ts';
-import { Heart, LucideShare2, MessageCircle, Save } from "lucide-react";
-import { formattedPostTime } from '../Scripts/GetData.ts';
+import { Bookmark, Heart, MessageCircle, Send } from "lucide-react";
+import { formattedPostTime, handleTimeFormating } from '../Scripts/GetData.ts';
+import ShareDilogBox from '../modules/ShareDilogBox.tsx';
+import { useGeneralContext } from '../Context/GeneralContext.tsx';
 
 interface UserInfoProps {
   username: string,
@@ -46,6 +48,14 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
   const [commentInput, setCommentInput] = useState<string>("");
   const [allComments, setAllComments] = useState<CommentProps[]>([]);
   const [profileInfo, setProfileInfo] = useState<ProfileInfo>();
+  const [toogleShareDilogBox, setToogleShareDilogBox] = useState<boolean>(false);
+  const [sharePostRefId, setSharePostRefId] = useState<string>("");
+  const [postOwnerId, setPostOwnerId] = useState<string>("");
+  const [postUsername, setPostUserName] = useState<string>("");
+  const [likeStatus, setLikeStatus] = useState<boolean>(false);
+  const [totalLikes, setTotalLikes] = useState<number>(currentLikes);
+
+  const { fetchPostStatus, handleLikePost } = useGeneralContext();
 
   useEffect(() => {
 
@@ -97,6 +107,17 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
     fetchProfileInfo();
   }, [id]);
 
+  useEffect(() => {
+
+    (async () => {
+      const status = await fetchPostStatus(id);
+      const { likeStatus } = status;
+      console.log("this is the the like status of current post", likeStatus);
+      setLikeStatus(likeStatus);
+    })();
+
+  }, [id, fetchPostStatus]);
+
 
   async function handlePostComment() {
 
@@ -124,7 +145,6 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
       const result = await response.json();
 
       if (response.ok) {
-        console.log(result);
         const commentTime = result.data.initiateTime;
 
         const timeAgo: string = handleTimeFormating(commentTime);
@@ -150,43 +170,41 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
 
   }
 
+  async function handleSharePost() {
 
-  function handleTimeFormating(previousTime: number) {
+    const response = await fetch(`${MAIN_BACKEND_URL}/uploadPost/fetch-single-post/${id}`);
+    const result = await response.json();
 
-    const timeNow = Date.now();
-    let timeAgo;
-    const seconds = Math.floor((timeNow - previousTime) / 1000);
-
-    if (seconds < 60) {
-      timeAgo = `${seconds} sec`;
-      return timeAgo;
-    }
-    const minutes = Math.floor(seconds / 60);
-
-    if (minutes < 60) {
-      timeAgo = `${minutes} min`;
-      return timeAgo;
-    }
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) {
-      timeAgo = `${hours} hr`;
-      return timeAgo;
+    if (response.ok) {
+      const post = result.post;
+      setSharePostRefId(post._id);
+      setPostOwnerId(post.author.userId);
+      setPostUserName(post.authorName);
+      setToogleShareDilogBox(prev => !prev);
     }
 
-    const days = Math.floor(hours / 24);
-    if (days == 1) {
-      timeAgo = `${days} day`;
-      return timeAgo;
-    }
-    else {
-      timeAgo = `${days} days`
-      return timeAgo;
-    }
 
   }
 
+  async function handleClickLikePost() {
+    const currentLikeStatus = await handleLikePost(id, likeStatus);
+    setLikeStatus(currentLikeStatus);
+    if(currentLikeStatus) {
+       setTotalLikes(prev => prev + 1);
+    }else { 
+      setTotalLikes(prev => prev - 1);
+    }
+  }
+
+
+
   return (
     <>
+
+      {toogleShareDilogBox && <ShareDilogBox sharePostRefId={sharePostRefId} postOwnerId={postOwnerId} postOwnerName={postUsername}
+        toogleOpenCloseButton={setToogleShareDilogBox} />}
+
+
       <div className={styles.CommentBoxContainer} >
 
         <button style={{
@@ -236,12 +254,12 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
                   </div>
 
                   <div id={styles.usernameAndTime}>
-                    <p style={{ fontWeight: "bolder", fontSize: "15px" }} >{comment.username}</p>
-                    <p style={{ fontSize: "12px", marginTop: "5px" }}>{comment.time}</p>
+                    <p style={{ fontWeight: "bolder", fontSize: "13px", fontFamily: "Helvetica Neue , Helvetica, Arial, sans-serif" }} >{comment.username}</p>
+                    <p style={{ fontSize: "12px", marginTop: "5px", opacity: "0.7" }}>{comment.time}</p>
                   </div>
 
                   <div id={styles.userComment}>
-                    <p style={{ fontSize: "15px" }} >{comment.comment}</p>
+                    <p style={{ fontSize: "15px", opacity: "0.9", fontWeight: "400", fontFamily: "Helvetica Neue , Helvetica, Arial, sans-serif" }} >{comment.comment}</p>
                   </div>
 
                 </div>
@@ -273,19 +291,19 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
             <div className={styles.LikeOperations}  >
               <div style={{ width: "100%", display: 'flex', alignItems: "center", justifyContent: "space-between" }} >
                 <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }} >
-                  <Heart id={styles.likeItems} />
+                  <Heart stroke={`${likeStatus ? "red" : "white"}`} fill={`${likeStatus ? "red" : "none"}`} onClick={handleClickLikePost} id={styles.likeItems} />
                   <MessageCircle id={styles.likeItems} />
-                  <LucideShare2 id={styles.likeItems} />
+                  <Send onClick={handleSharePost} id={styles.likeItems} />
                 </div>
                 <div>
-                  <Save id={styles.likeItems} />
+                  <Bookmark id={styles.likeItems} />
                 </div>
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "3px" }} >
-                <div  style={{ display: "flex", gap: "3px" }} >
-                  <span>{currentLikes}</span>
-                  <span>{currentLikes > 1 ? "likes" : "like"}</span>
+                <div style={{ display: "flex", gap: "3px" }} >
+                  <span>{totalLikes}</span>
+                  <span>{totalLikes > 1 ? "likes" : "like"}</span>
                 </div>
                 <div>
                   <span>{formattedPostTime(createdAt)}</span>

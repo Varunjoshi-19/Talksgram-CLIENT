@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "../Styling/Login.module.css";
 import { useNavigate } from "react-router-dom";
-import { useUserAuthContext } from "../Context/UserContext"
+import {  useUserAuthContext } from "../Context/UserContext"
 import { MAIN_BACKEND_URL } from "../Scripts/URL.ts";
 import { useSocketContext } from "../Context/SocketContext.tsx";
 import { fetchProfileDetails } from "../Scripts/FetchDetails.ts";
@@ -80,21 +80,7 @@ function Login() {
         const result = await response.json();
 
         if (response.ok) {
-
-            const info: any = {
-                id: result.UserData.user.id,
-                username: result.UserData.user.username,
-                email: result.UserData.user.email
-            }
-
-            localStorage.setItem("user-token", JSON.stringify(info));
-            dispatch({ type: "set", payload: info });
-
-            setError(null);
-            setMessage(result.message);
-            navigate("/");
-            handleSendOnlineStatus(result);
-
+            operationsRelatedOnLogin(result);
         }
         if (!response.ok) {
             setMessage(null);
@@ -104,6 +90,25 @@ function Login() {
 
 
     }
+
+    async function operationsRelatedOnLogin(result: any) {
+
+        const { id, username, email } = result.UserData.user;
+        const info: any = { id, username, email };
+
+        localStorage.setItem("user-token", JSON.stringify(info));
+        dispatch({ type: "set", payload: info });
+
+        setError(null);
+        setMessage(result.message);
+        navigate("/");
+        handleSendOnlineStatus(result);
+
+        
+
+
+    }
+
 
     async function handleSendOnlineStatus(result: any) {
 
