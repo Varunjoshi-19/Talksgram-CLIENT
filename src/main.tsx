@@ -7,20 +7,20 @@ import { SocketProvider } from './Context/SocketContext.tsx'
 import { ChatContextProvider } from './Context/ChattedUserContext.tsx'
 import { GeneralContextProvider } from './Context/GeneralContext.tsx'
 createRoot(document.getElementById('root')!).render(
-  <GeneralContextProvider>
-    <AuthContextProvider>
-      <ToggleProvider>
-        <ChatContextProvider>
-          <SocketProvider>
+  <AuthContextProvider>
+    <ToggleProvider>
+      <ChatContextProvider>
+        <SocketProvider>
+          <GeneralContextProvider>
 
 
 
             <App />
 
 
-          </SocketProvider>
-        </ChatContextProvider>
-      </ToggleProvider>
-    </AuthContextProvider>,
-  </GeneralContextProvider>
+          </GeneralContextProvider>
+        </SocketProvider>
+      </ChatContextProvider>
+    </ToggleProvider>
+  </AuthContextProvider>,
 )

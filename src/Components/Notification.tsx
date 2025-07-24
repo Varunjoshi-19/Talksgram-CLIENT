@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import styles from "../Styling/Notification.module.css";
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
-import { notificationPayload } from "./MenuOptions";
+import { updateLocalStorageData } from "../Scripts/FetchDetails";
+import { notificationPayload } from "../Interfaces";
 
 
 interface NotificationProps {
@@ -17,20 +18,15 @@ const Notification: React.FC<NotificationProps> = ({ AllNotifications, setAllNot
 
     const [message, setMessage] = useState<string | null>(null);
 
-
     useEffect(() => {
 
+        const timeoutId = setTimeout(() => {
+            setMessage(null);
+        }, 2000);
 
-        function clearUi() {
-
-            setTimeout(() => {
-
-                setMessage(null);
-
-            }, 1500);
-
+        return () => {
+            clearTimeout(timeoutId);
         }
-        clearUi();
 
     }, [message]);
 
@@ -38,8 +34,21 @@ const Notification: React.FC<NotificationProps> = ({ AllNotifications, setAllNot
     async function handleAcceptRequest(item: string) {
 
         const parsedItem = JSON.parse(item);
+        console.log(parsedItem);
 
-        const response = await fetch(`${MAIN_BACKEND_URL}/Personal-chat/AcceptedRequest`, {
+        setNotiCount(count => count - 1);
+
+        setAllNotifications((prevNotification) => {
+
+            const newMap = new Map(prevNotification);
+            newMap.delete(parsedItem.userIdOf);
+            return newMap;
+        });
+
+        setMessage(`Request accepted of ${parsedItem?.usernameOf}`);
+
+
+        await fetch(`${MAIN_BACKEND_URL}/Personal-chat/AcceptedRequest`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -48,21 +57,7 @@ const Notification: React.FC<NotificationProps> = ({ AllNotifications, setAllNot
         });
 
 
-        if (response.ok) {
-            setMessage(`Request accepted of ${parsedItem?.usernameOf}`);
-            setNotiCount(count => count - 1);
-
-            setAllNotifications((prevNotification) => {
-
-                const newMap = new Map(prevNotification);
-                newMap.delete(parsedItem.userIdOf);
-                return newMap;
-            })
-
-        }
-        else {
-            setMessage(`failed to accepted request `);
-        }
+        await updateLocalStorageData(parsedItem.userId);
 
     }
 
@@ -70,7 +65,19 @@ const Notification: React.FC<NotificationProps> = ({ AllNotifications, setAllNot
 
         const parsedItem = JSON.parse(item);
 
-        const response = await fetch(`${MAIN_BACKEND_URL}/Personal-chat/removeFromRequested`, {
+
+        setNotiCount(count => count - 1);
+
+        setAllNotifications((prevNotification) => {
+
+            const newMap = new Map(prevNotification);
+            newMap.delete(parsedItem.userIdOf);
+            return newMap;
+        })
+
+        setMessage(`Request rejected of ${parsedItem?.usernameOf}`);
+
+        await fetch(`${MAIN_BACKEND_URL}/Personal-chat/removeFromRequested`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -79,23 +86,6 @@ const Notification: React.FC<NotificationProps> = ({ AllNotifications, setAllNot
             body: item
 
         });
-
-
-        if (response.ok) {
-            setMessage(`Request rejected of ${parsedItem?.usernameOf}`);
-            setNotiCount(count => count - 1);
-            
-             setAllNotifications((prevNotification) => {
-
-                const newMap = new Map(prevNotification);
-                newMap.delete(parsedItem.userIdOf);
-                return newMap;
-            })
-
-        }
-        else {
-            setMessage(`failed to rejected request `);
-        }
 
     }
 
@@ -107,11 +97,11 @@ const Notification: React.FC<NotificationProps> = ({ AllNotifications, setAllNot
 
             <div className={styles.AllNotifications} >
 
-                {AllNotifications.size > 0  ?
+                {AllNotifications.size > 0 ?
 
-                   Array.from(AllNotifications).map(([userId  , notification]) => (
-                            
-                     
+                    Array.from(AllNotifications).map(([userId, notification]) => (
+
+
                         <div key={userId} className={styles.eachNotification}>
 
                             <div id={styles.profileImage}>
@@ -123,19 +113,19 @@ const Notification: React.FC<NotificationProps> = ({ AllNotifications, setAllNot
                             </p>
 
                             <div style={{ display: "flex", gap: "10px", marginLeft: "0%" }} >
-                                <button onClick={() => handleAcceptRequest(JSON.stringify(notification))} style={{
-                                    padding: "5px 5px", fontSize: "15px", color: "white",
-                                    fontWeight: "bolder", backgroundColor: "#1877F2", border: 'none'
-                                    , borderRadius: "5px", cursor: "pointer"
-                                }} >Accept</button>
+                                <button onClick={() => handleAcceptRequest(JSON.stringify(notification))}
+                                    style={{ backgroundColor: "#1877F2" }}
+                                    className={styles.CustomButton} >
+                                    <span>Accept</span>
 
-                                <button onClick={() => handleRejectRequest(JSON.stringify(notification))} style={{
-                                    padding: "5px 5px", fontSize: "15px", color: "white",
-                                    fontWeight: "bolder", backgroundColor: "rgba(112, 112, 112, 0.507)", border: 'none'
-                                    , borderRadius: "5px", cursor: "pointer"
-                                }} >Reject</button>
+                                </button>
+
+                                <button onClick={() => handleRejectRequest(JSON.stringify(notification))}
+                                    style={{ backgroundColor: "#2d2d2d" }}
+                                    className={styles.CustomButton} >
+                                    <span>Reject</span>
+                                </button>
                             </div>
-
                         </div>
 
                     ))
@@ -148,6 +138,7 @@ const Notification: React.FC<NotificationProps> = ({ AllNotifications, setAllNot
 
                 <div>
                     {message && <p>{message}</p>}
+
                 </div>
 
             </div>

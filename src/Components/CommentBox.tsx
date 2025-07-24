@@ -4,41 +4,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSmile
 } from "@fortawesome/free-solid-svg-icons";
-import { fetchOtherUserDetails, fetchProfileDetails } from "../Scripts/FetchDetails.ts";
 import { MAIN_BACKEND_URL } from '../Scripts/URL.ts';
 import { Bookmark, Heart, MessageCircle, Send } from "lucide-react";
 import { formattedPostTime, handleTimeFormating } from '../Scripts/GetData.ts';
 import ShareDilogBox from '../modules/ShareDilogBox.tsx';
 import { useGeneralContext } from '../Context/GeneralContext.tsx';
+import { GetIdAndUsername } from '../Scripts/FetchDetails.ts';
+import { useUserAuthContext } from '../Context/UserContext.tsx';
+import { CommentProps, PostIdProps, UserInfoProps } from '../Interfaces/index.ts';
+import LoadingScreen from './LoadingScreen.tsx';
 
-interface UserInfoProps {
-  username: string,
-  userId: string
-}
-
-interface PostIdProps {
-
-  id: string;
-  toogleBox: () => void;
-  userInfoF: () => UserInfoProps
-  currentLikes: number;
-  createdAt: string;
-
-}
-
-interface ProfileInfo {
-  _id: string,
-  username: string,
-
-}
-
-interface CommentProps {
-  userId: string | any,
-  username: string | any,
-  comment: string,
-  time: string,
-  initiateTime: number
-}
 
 
 
@@ -47,7 +22,6 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
   const [userInfo, setUserInfo] = useState<UserInfoProps | null>(null);
   const [commentInput, setCommentInput] = useState<string>("");
   const [allComments, setAllComments] = useState<CommentProps[]>([]);
-  const [profileInfo, setProfileInfo] = useState<ProfileInfo>();
   const [toogleShareDilogBox, setToogleShareDilogBox] = useState<boolean>(false);
   const [sharePostRefId, setSharePostRefId] = useState<string>("");
   const [postOwnerId, setPostOwnerId] = useState<string>("");
@@ -56,11 +30,11 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
   const [totalLikes, setTotalLikes] = useState<number>(currentLikes);
 
   const { fetchPostStatus, handleLikePost } = useGeneralContext();
+  const { profile } = useUserAuthContext();
 
   useEffect(() => {
 
     if (id == "") return;
-
 
     async function fetchAllComments() {
 
@@ -76,7 +50,7 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
         const commentsWithUsernames = await Promise.all(
           result.comments.map(async (item: CommentProps) => {
 
-            const commentResponse = await fetchOtherUserDetails(item.userId);
+            const commentResponse = await GetIdAndUsername(item.userId);
             const timeAgo = handleTimeFormating(item.initiateTime);
 
             return {
@@ -98,13 +72,7 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
 
     }
 
-    async function fetchProfileInfo() {
-      const profile = await fetchProfileDetails();
-      setProfileInfo(profile);
-    }
-
     fetchAllComments();
-    fetchProfileInfo();
   }, [id]);
 
   useEffect(() => {
@@ -112,7 +80,6 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
     (async () => {
       const status = await fetchPostStatus(id);
       const { likeStatus } = status;
-      console.log("this is the the like status of current post", likeStatus);
       setLikeStatus(likeStatus);
     })();
 
@@ -129,7 +96,7 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
 
       const commentInfo = {
         postId: id,
-        userId: profileInfo?._id,
+        userId: profile?._id,
         comment: newComment
       }
 
@@ -150,8 +117,8 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
         const timeAgo: string = handleTimeFormating(commentTime);
 
         setAllComments([{
-          userId: profileInfo?._id,
-          username: profileInfo?.username,
+          userId: profile?._id,
+          username: profile?.username,
           comment: newComment,
           time: timeAgo,
           initiateTime: commentTime
@@ -189,12 +156,30 @@ const CommentBox: React.FC<PostIdProps> = ({ id, toogleBox, userInfoF, currentLi
   async function handleClickLikePost() {
     const currentLikeStatus = await handleLikePost(id, likeStatus);
     setLikeStatus(currentLikeStatus);
-    if(currentLikeStatus) {
-       setTotalLikes(prev => prev + 1);
-    }else { 
+    if (currentLikeStatus) {
+      setTotalLikes(prev => prev + 1);
+    } else {
       setTotalLikes(prev => prev - 1);
     }
   }
+
+
+
+  const [showMain, setShowMain] = useState<boolean>(false);
+
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowMain(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!showMain || !allComments) {
+    return <LoadingScreen />
+  }
+
 
 
 

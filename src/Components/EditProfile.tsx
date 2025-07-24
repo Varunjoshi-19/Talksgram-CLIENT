@@ -1,21 +1,10 @@
+import { EditProfileProps } from "../Interfaces";
+import { updateLocalStorageData } from "../Scripts/FetchDetails";
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
 import styles from "../Styling/EditProfile.module.css";
 import { useRef, useState, useEffect } from "react";
 
-interface EditProfileProps {
 
-    profileInfo: {
-        _id: string;
-        username: string;
-        fullname: string;
-        post: number,
-        bio: string;
-        followers: number;
-        following: number
-    };
-
-    s: () => void;
-}
 
 const EditProfile: React.FC<EditProfileProps> = ({ profileInfo, s }) => {
 
@@ -33,17 +22,17 @@ const EditProfile: React.FC<EditProfileProps> = ({ profileInfo, s }) => {
     function handleSelectFile(e: React.ChangeEvent<HTMLInputElement>) {
 
         const file = e.target.files?.[0];
-     
+
         if (file) {
             setFile(file);
             const imageUrl = URL.createObjectURL(file);
             setProfileImage(imageUrl);
-         
+
         }
     }
 
     function handleEditProfileImage() {
-      
+
         if (fileInputRef.current) {
             fileInputRef.current.click();
         }
@@ -70,22 +59,22 @@ const EditProfile: React.FC<EditProfileProps> = ({ profileInfo, s }) => {
 
         const formData = new FormData();
         formData.append("id", profileInfo._id);
-     
+
 
         if (username != profileInfo.username) {
-          
+
             formData.append("username", username);
         }
         if (fullname != profileInfo.fullname) {
-          
+
             formData.append("fullname", fullname);
         }
         if (bio != profileInfo.bio) {
-           
+
             formData.append("bio", bio);
         }
         if (profile) {
-            
+
             formData.append("profileImage", profile);
         }
 
@@ -100,7 +89,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ profileInfo, s }) => {
         if (response.ok) {
             setError(null);
             setMessage(result.message);
-         
+            updateLocalStorageData(profileInfo._id);
             setTimeout(() => {
 
                 s();
@@ -163,7 +152,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ profileInfo, s }) => {
             </div>
 
             <div id={styles.editProfile}>
-                
+
                 <div style={{
                     display: "flex", opacity: "1", position: "relative",
                     height: "10%", width: "100%",
@@ -177,11 +166,11 @@ const EditProfile: React.FC<EditProfileProps> = ({ profileInfo, s }) => {
 
 
                 <div style={{
-                    alignItems: "center", justifyContent : "center" , top: "15%", left: "10%",  height :"100%", width : "100%",
+                    alignItems: "center", justifyContent: "center", top: "15%", left: "10%", height: "100%", width: "100%",
                     gap: "20px", display: "flex", flexDirection: "column"
                 }} >
 
-                    <div style={{  display: "flex", flexDirection: "column", justifyContent: "center", gap: "10px" }} >
+                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "10px" }} >
 
                         <div id={styles.profileIconEdit} >
                             <img src={profileImage} alt="_profileImage" width="100%" height="100%" />
@@ -202,7 +191,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ profileInfo, s }) => {
                     </div>
 
 
-                    <div style={{ display: "flex", border : "none", width : "100%",  flexDirection: "column", gap: "30px" }}>
+                    <div style={{ display: "flex", border: "none", width: "100%", flexDirection: "column", gap: "30px" }}>
 
                         <div style={{ display: 'flex', gap: "10px" }}>
                             <p style={{ fontSize: "1.25rem", fontWeight: "bolder" }} >Name : </p>
@@ -213,7 +202,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ profileInfo, s }) => {
                             }} />
                         </div>
 
-                        <div style={{   display: 'flex', gap: "5px" }}>
+                        <div style={{ display: 'flex', gap: "5px" }}>
                             <p style={{ fontSize: "1.05rem", fontWeight: "bolder" }}>Username: </p>
                             <input value={username} onChange={(e) => setUsername(e.target.value)} type="text" style={{
                                 width: "76.5%", textDecoration: "none",
@@ -223,8 +212,8 @@ const EditProfile: React.FC<EditProfileProps> = ({ profileInfo, s }) => {
                         </div>
 
 
-                        <div style={{  display: 'flex', gap: "50px" }}>
-                            <p style={{ position: "relative", left : "10px", fontSize: "1.25rem", fontWeight: "bolder" }}>Bio: </p>
+                        <div style={{ display: 'flex', gap: "50px" }}>
+                            <p style={{ position: "relative", left: "10px", fontSize: "1.25rem", fontWeight: "bolder" }}>Bio: </p>
                             <input value={bio} onChange={(e) => setBio(e.target.value)} type="text" style={{
                                 width: "78%", textDecoration: "none",
                                 outline: 'none', backgroundColor: "transparent", border: "none",
@@ -233,12 +222,12 @@ const EditProfile: React.FC<EditProfileProps> = ({ profileInfo, s }) => {
                         </div>
 
 
-                        <button id = {styles.changeButton} onClick={handleSubmitNewProfile} 
-                     >Change</button>
+                        <button id={styles.changeButton} onClick={handleSubmitNewProfile}
+                        >Change</button>
                     </div>
 
-                    {message ? <div style={{ fontWeight: "bolder", color: "#5cb85c", display: "flex" , position : "absolute" , left : "5px" , bottom : "10px" }} >
-                       {message}
+                    {message ? <div style={{ fontWeight: "bolder", color: "#5cb85c", display: "flex", position: "absolute", left: "5px", bottom: "10px" }} >
+                        {message}
                     </div>
 
                         :

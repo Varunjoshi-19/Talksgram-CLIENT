@@ -1,9 +1,10 @@
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext  } from "react";
 import { Chat, CreateAndShareMessage } from "../Scripts/GetData";
 import { fetchAllData, fetchProfileLocalStorage } from "../Scripts/FetchDetails";
 import { NavigateFunction } from "react-router-dom";
-import { io, Socket } from "socket.io-client";
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
+import { useUserAuthContext } from "./UserContext";
+import { useSocketContext } from "./SocketContext";
 
 interface GeneralContextPayload {
     handleSharePost: (selectedUserId: string,
@@ -32,10 +33,9 @@ export function useGeneralContext() {
 
 export const GeneralContextProvider = ({ children }: { children: React.ReactNode }) => {
 
-    const socket: Socket = useMemo(() => io(MAIN_BACKEND_URL, {
-        transports: ["websocket"],
-        withCredentials: true
-    }), []);
+
+    const { profile } = useUserAuthContext();
+    const { socket }  = useSocketContext();
 
 
     async function handleSharePost(selectedUserId: string,
@@ -46,9 +46,10 @@ export const GeneralContextProvider = ({ children }: { children: React.ReactNode
         postOwnerName: string
     ) {
 
+        if (!profile) return;
         console.log(selectedUserId, sharePostRefId);
         const otherUserId = selectedUserId;
-        const data = await fetchAllData(otherUserId);
+        const data = await fetchAllData(profile, otherUserId);
         const { success } = data;
         if (!success) {
             navigate("/error");
@@ -56,14 +57,14 @@ export const GeneralContextProvider = ({ children }: { children: React.ReactNode
         }
 
         const shareDataInfo = { ...data, refId: sharePostRefId, userId: postOwnerId, username: postOwnerName };
-        const { senderDetails, receiverDetails, chatId, refId, userId, username } = shareDataInfo;
+        const { receiverDetails, chatId, refId, userId, username } = shareDataInfo;
 
         const sharedInfo: Chat = {
-            userId: senderDetails._id,
+            userId: profile._id,
             otherUserId: receiverDetails._id,
             chatId: chatId,
             initateTime: Date.now().toString(),
-            senderUsername: senderDetails.username || "",
+            senderUsername: profile.username || "",
             receiverUsername: receiverDetails.username || "",
             sharedContent: {
                 type: "post",
@@ -75,13 +76,13 @@ export const GeneralContextProvider = ({ children }: { children: React.ReactNode
         }
 
         const reelTimeData = {
-            senderId: senderDetails._id,
+            senderId: profile._id,
             receiverId: receiverDetails._id,
-            userId: senderDetails._id,
+            userId: profile._id,
             chatId: chatId,
             yourMessage: false,
-            checkName: senderDetails.username,
-            username: senderDetails.username,
+            checkName: profile.username,
+            username: profile.username,
             seenStatus: false,
             initateTime: Date.now() - 2 * 1000,
             recentChat: null,
@@ -144,7 +145,7 @@ export const GeneralContextProvider = ({ children }: { children: React.ReactNode
 
     async function handleLikePost(postId: string, likeStatus: boolean): Promise<boolean> {
 
-        const profile : any =  await fetchProfileLocalStorage();
+        const profile: any = await fetchProfileLocalStorage();
         if (!profile) return false;
 
         const idInfo = {

@@ -1,40 +1,32 @@
 import { createContext, Dispatch, ReactNode, useContext, useEffect, useReducer } from "react";
+import { ProfilePayload } from "../Interfaces";
+
 
 interface UserContextPayload {
-    user: User | null;
-    profile: any;
+    profile: ProfilePayload | null;
     dispatch: Dispatch<Action>
 
 }
-
 
 interface AuthContextProviderProps {
     children: ReactNode;
 }
 
-interface User {
-    id: string;
-    username: string;
-    email: string;
-}
-
 interface State {
-    profile: any;
-    user: User | null;
+    profile: ProfilePayload | null;
     logout: boolean;
 }
 
 interface Action {
     type: typeof ACTIONS[keyof typeof ACTIONS];
-    payload?: User;
+    payload?: ProfilePayload;
 }
 
 const AuthContext = createContext<UserContextPayload | undefined>(undefined);
 
 export const ACTIONS = {
-    SET_USER: "set",
     SET_PROFILE: "SET_PROFILE",
-    REMOVE_USER: "remove",
+    REMOVE_PROFILE: "REMOVE_PROFILE",
 } as const;
 
 export function useUserAuthContext() {
@@ -47,13 +39,11 @@ export function useUserAuthContext() {
 
 function reducer(state: State, action: Action): State {
     switch (action.type) {
-        case ACTIONS.SET_USER:
-            return { ...state, user: action.payload || null, logout: false };
-        case ACTIONS.REMOVE_USER:
-            return { ...state, user: null, logout: true };
-
         case ACTIONS.SET_PROFILE:
-            return { ...state, profile: action.payload || null }
+            return { ...state, profile: action.payload || null };
+
+        case ACTIONS.REMOVE_PROFILE:
+            return { ...state, profile: null };
 
         default:
             return state;
@@ -61,42 +51,31 @@ function reducer(state: State, action: Action): State {
 }
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
-    const [state, dispatch] = useReducer(reducer, { profile: null, user: null, logout: true });
+    const [state, dispatch] = useReducer(reducer, { profile: null, logout: true });
 
     useEffect(() => {
 
         function fetchUserDetails() {
 
-            const userToken = localStorage.getItem("user-token");
+            const profile = localStorage.getItem("profile-details");
             try {
-                if (userToken) {
+                if (profile) {
 
-                    const parsedUser = JSON.parse(userToken);
-                    dispatch({ type: ACTIONS.SET_USER, payload: parsedUser });
+                    const parsedProfile = JSON.parse(profile);
+                    dispatch({ type: ACTIONS.SET_PROFILE, payload: parsedProfile });
                 }
             } catch (error) {
                 console.error("Failed to parse user token:", error);
             }
 
         }
-        async function fetchUserProfile() {
-            const profile = localStorage.getItem("profile-details");
-            if (profile) {
-                const parsedProfile = JSON.parse(profile);
-                dispatch({ type: ACTIONS.SET_PROFILE, payload: parsedProfile });
-            }
-        }
-
 
         fetchUserDetails();
-        fetchUserProfile();
 
     }, []);
 
-
-
     return (
-        <AuthContext.Provider value={{ user: state.user, profile: state.profile, dispatch }}>
+        <AuthContext.Provider value={{ profile: state.profile, dispatch }}>
             {children}
         </AuthContext.Provider>
     );

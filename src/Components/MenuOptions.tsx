@@ -12,39 +12,19 @@ import { useCallback, useEffect, useState } from "react";
 import SearchBar from "./SearchBar";
 import Notification from "./Notification";
 import CreatePost from "./CreatePost";
-import { useUserAuthContext } from "../Context/UserContext";
+import { ACTIONS, useUserAuthContext } from "../Context/UserContext";
 import { useToogle } from "../Context/ToogleContext";
 import LoadingScreen from "./LoadingScreen";
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
 import { useSocketContext } from "../Context/SocketContext";
 import { useChatContext } from "../Context/ChattedUserContext";
+import { MenuOptionProps, notificationPayload } from "../Interfaces";
 
 
-interface MenuOptionProps {
 
-  profile: {
-    _id: string,
-    username: string,
-    fullname: string,
-    post: number,
-    bio: string,
-    followers: number,
-    following: number
-  }
-
-
-}
-
-export interface notificationPayload {
-
-  userId: string,
-  userIdOf: string,
-  usernameOf: string
-};
 
 const MenuOptions: React.FC<MenuOptionProps> = ({ profile }) => {
 
-  const [searchOption, setSearchOption] = useState<boolean>(false);
   const [notificationBar, setNotificationBar] = useState<boolean>(false);
   const [uploadPostBar, setUploadPostBar] = useState<boolean>(false);
 
@@ -120,7 +100,6 @@ const MenuOptions: React.FC<MenuOptionProps> = ({ profile }) => {
     setSearchInput("");
     toogleVisiblility(false);
     setNotificationBar(false);
-    setSearchOption(false);
     navigate("/");
 
   }
@@ -128,7 +107,6 @@ const MenuOptions: React.FC<MenuOptionProps> = ({ profile }) => {
   function NavigateToProfilePage() {
     setSearchInput("");
     toogleVisiblility(false);
-    setSearchOption(false);
 
     setNotificationBar(false);
     navigate("/accounts/profile");
@@ -137,7 +115,6 @@ const MenuOptions: React.FC<MenuOptionProps> = ({ profile }) => {
   function NavigateToMessagePage() {
     setSearchInput("");
     toogleVisiblility(false);
-    setSearchOption(false);
     setNotificationBar(false);
 
     navigate("/accounts/inbox/messages");
@@ -168,10 +145,9 @@ const MenuOptions: React.FC<MenuOptionProps> = ({ profile }) => {
   }
 
   function Logout() {
-    dispatch({ type: "remove" });
+    dispatch({ type: ACTIONS.REMOVE_PROFILE});
     handleSendOfflineStatus();
-    console.log(searchOption);
-    localStorage.removeItem("user-token");
+    localStorage.removeItem("profile-details");
     navigate("/accounts/login");
   }
 

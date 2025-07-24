@@ -1,57 +1,38 @@
 import { MAIN_BACKEND_URL } from "./URL";
 
 
-const URL = `${MAIN_BACKEND_URL}/accounts/fetchProfileDetails`;
 
-export async function fetchProfileDetails(id = "") {
+export async function GetIdAndUsername(id: string) {
 
-    let user;
-    let userId;
-
-    if (id != "") {
-        userId = id;
-    } else {
-
-        user = localStorage.getItem("user-token");
-        if (user) {
-
-            const parsedUser = JSON.parse(user);
-            userId = parsedUser.id;
-        }
-
-    }
-
-    console.log(userId);
-
-    const response = await fetch(`${URL}/${userId}`, { method: "POST" });
-    const result = await response.json();
-
-    if (response.ok) {
-        const profile = result.userProfile;
-        return profile;
-    }
-    if (!response.ok) {
-        return null;
+    try {
+        const response = await fetch(`${MAIN_BACKEND_URL}/accounts/getIdAndUsername/${id}`);
+        const result = await response.json();
+        if (response.ok) return result;
+    } catch (error) {
+        return false;
     }
 
 
 }
 
-
-export async function fetchOtherUserDetails(id: string) {
-
-    const response = await fetch(`${MAIN_BACKEND_URL}/accounts/fetchOtherUser/${id}`, { method: "POST" });
-    const result = await response.json();
-
-    if (response.ok) {
-        const profile = result.userProfile;
-        return profile;
-    }
-    if (!response.ok) {
-        return null;
+export async function fetchProfileDetails(id : string) { 
+    try {
+      const response = await fetch(`${MAIN_BACKEND_URL}/accounts/fetch-profile-details/${id}`);
+      const result = await response.json();
+      return result;         
+    }catch(error) {
+        return false;
     }
 
 }
+
+
+export async function updateLocalStorageData(id : string) {
+    const profile = await fetchProfileDetails(id); 
+    localStorage.setItem("profile-details" , JSON.stringify(profile));
+}
+
+
 
 export async function GenerateId(combinedString: string) {
 
@@ -126,36 +107,31 @@ export async function fetchCommunicationID(userId: string) {
 
 }
 
-export async function fetchAllData(id: string) {
+export async function fetchAllData(profile: any, id: string) {
 
-    let senderDetails;
     let receiverDetails;
     let chatId;
 
     try {
-        const [myDetails, otherDetailsResponse] = await Promise.all([
-            fetchProfileDetails(),
-            fetch(`${MAIN_BACKEND_URL}/Personal-chat/fetchUser/${id}`)
 
-        ]);
+        const otherDetailsResponse = await fetch(`${MAIN_BACKEND_URL}/Personal-chat/fetchUser/${id}`)
 
         const otherDetails = await otherDetailsResponse.json();
 
 
         if (otherDetailsResponse.ok) {
-            senderDetails = myDetails;
-            receiverDetails = otherDetails.userProfile;
+            receiverDetails = otherDetails;
         } else {
             return { success: false };
         }
 
-        const otherProfileId = otherDetails.userProfile?._id;
-        const sortedUsers = [myDetails?._id, otherProfileId].sort();
-        const combinedString = `${sortedUsers[0]}_${sortedUsers[1]}`
+        const otherProfileId = otherDetails._id;
+        const sortedUsers = [profile?._id, otherProfileId].sort();
+        const combinedString = `${sortedUsers[0]}_${sortedUsers[1]}`;
         const generatedId = await GenerateId(combinedString);
         chatId = generatedId;
 
-        return { senderDetails, receiverDetails, chatId, success: true };
+        return { receiverDetails, chatId, success: true };
 
     } catch (error) {
         console.error("Error fetching data:", error);
@@ -216,10 +192,10 @@ export async function seenAllChats(senderId: string, receiverId: string) {
 }
 
 
-export async function fetchProfileLocalStorage() : Promise<any>  {
+export async function fetchProfileLocalStorage(): Promise<any> {
     const profile = localStorage.getItem("profile-details");
     if (!profile) throw new Error("No profile exists!");
-    
+
     const parsedProfile = JSON.parse(profile);
     console.log(parsedProfile._id);
     return parsedProfile;

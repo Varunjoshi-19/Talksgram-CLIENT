@@ -2,12 +2,11 @@ import styles from "../Styling/CreatePost.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage } from "@fortawesome/free-solid-svg-icons";
 import { useRef, useState } from "react";
-import { fetchProfileDetails } from "../Scripts/FetchDetails";
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
+import { useUserAuthContext } from "../Context/UserContext";
+import { CreatePostProps } from "../Interfaces";
 
-interface CreatePostProps {
-    s: () => void; 
-}
+
 
 
 const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
@@ -20,20 +19,22 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
     const [caption, setCaption] = useState<string>("");
     const [descriptionBar, setDescriptionBar] = useState<boolean>(false);
     const [imageWidth, setWidth] = useState<string>("100%");
-    const [currentExtensionType , setCurrentExtensionType] = useState<string>("");
-    const ImageExtensions : string[] = ["jpg", "png", "jpeg"];
-    const validExtension : string[]= ["jpg" , "jpeg" , "png" , "mp4"];
+    const [currentExtensionType, setCurrentExtensionType] = useState<string>("");
+    const ImageExtensions: string[] = ["jpg", "png", "jpeg"];
+    const validExtension: string[] = ["jpg", "jpeg", "png", "mp4"];
+
+    const { profile } = useUserAuthContext();
 
     function handleSelectFile(e: React.ChangeEvent<HTMLInputElement>) {
 
         const file = e?.target.files?.[0];
         if (file) {
 
-            if (file.name.includes(".")){
+            if (file.name.includes(".")) {
 
                 const extension = file.name.split(".")[1];
 
-                if (extension === "jpeg" || extension === "jpg"|| extension === "png" || extension == "mp4"){
+                if (extension === "jpeg" || extension === "jpg" || extension === "png" || extension == "mp4") {
                     console.log(extension);
                     setPostFile(file);
                     const imageUrl = URL.createObjectURL(file);
@@ -52,7 +53,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
         }
     }
 
-    async function handlePostImage(profile : any) {
+    async function handlePostImage(profile: any) {
 
         if (!profile) {
             setError("Failed to Post");
@@ -61,15 +62,15 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
 
         if (profile && postFile) {
             const formData = new FormData();
-            formData.append("profile", JSON.stringify(profile)); 
-            formData.append("postImage", postFile); 
-            formData.append("caption", caption); 
+            formData.append("profile", JSON.stringify(profile));
+            formData.append("postImage", postFile);
+            formData.append("caption", caption);
 
             try {
                 const response = await fetch(`${MAIN_BACKEND_URL}/uploadPost/newPost`, {
                     method: "POST",
-                    credentials : "include",
-                    body: formData, 
+                    credentials: "include",
+                    body: formData,
                 });
 
                 const result = await response.json();
@@ -91,10 +92,9 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
         }
     }
 
+    async function handlePostReel(profile: any) {
 
-    async function handlePostReel(profile : any) {
 
-        
         if (!profile) {
             setError("Failed to Post");
             return;
@@ -103,14 +103,14 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
         if (profile && postFile) {
             console.log(postFile);
             const formData = new FormData();
-            formData.append("profile", JSON.stringify(profile)); 
-            formData.append("postReel", postFile); 
-            formData.append("caption", caption); 
+            formData.append("profile", JSON.stringify(profile));
+            formData.append("postReel", postFile);
+            formData.append("caption", caption);
 
             try {
                 const response = await fetch(`${MAIN_BACKEND_URL}/uploadReel/newReel`, {
                     method: "POST",
-                    body: formData, 
+                    body: formData,
                 });
 
                 const result = await response.json();
@@ -133,24 +133,21 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
 
     }
 
+    async function DecideReelOrPostUpload() {
 
-    async function DecideReelOrPostUpload() { 
 
-        const profile = await fetchProfileDetails();
-
-      if(profile) { 
-        if(ImageExtensions.includes(currentExtensionType))  {
-            console.log("Image Posted bro"); 
-            handlePostImage(profile);
-            return ;
+        if (profile) {
+            if (ImageExtensions.includes(currentExtensionType)) {
+                console.log("Image Posted bro");
+                handlePostImage(profile);
+                return;
+            }
+            if (currentExtensionType == "mp4") {
+                handlePostReel(profile);
+                return;
+            }
         }
-        if(currentExtensionType == "mp4") { 
-               handlePostReel(profile);
-               return;
-        }
-      }
     }
-
 
     function EnableDescriptionBar() {
         setDescriptionBar(true);
@@ -174,8 +171,8 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
 
                 {currentExtensionType != "" ?
 
-                    <div style={{width: "100%"}} >
-                        
+                    <div style={{ width: "100%" }} >
+
                         <div style={{
                             display: "flex", opacity: "1",
                             height: "10%", width: "100%",
@@ -202,17 +199,17 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
                             {validExtension.includes(currentExtensionType) ?
 
                                 <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center" }} >
-                                    
+
                                     {ImageExtensions.includes(currentExtensionType) ?
 
                                         <img src={selectedPostImage} alt=""
                                             height="100%" width={imageWidth}
-                                            style={{ borderRight: "2px solid white" , objectFit :"contain" }} />
+                                            style={{ borderRight: "2px solid white", objectFit: "contain" }} />
 
 
                                         :
 
-                                     <video src={selectedPostImage} style={{ borderRight: "2px solid white" }}
+                                        <video src={selectedPostImage} style={{ borderRight: "2px solid white" }}
                                             autoPlay
                                             loop={true}
                                             height="100%" width={imageWidth} />
@@ -249,7 +246,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
 
 
                                 </div>
-                                
+
                                 :
 
                                 <div style={{
@@ -269,7 +266,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
 
                     <>
 
-                        <div   style={{
+                        <div style={{
                             display: "flex", opacity: "1", position: "relative",
                             height: "10%", width: "100%",
                             borderTopLeftRadius: "10px", borderTopRightRadius: "10px", backgroundColor: "black",
@@ -280,10 +277,10 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
                         </div>
 
 
-                        <div style={{ 
-                            display: "flex", flexDirection: 'column', width :"300px",
+                        <div style={{
+                            display: "flex", flexDirection: 'column', width: "300px",
                             alignItems: "center", justifyContent: "center", position: "absolute",
-                            gap: "10px", top: "50%", left: "50%" , transform :"translate(-50% ,-50%)"
+                            gap: "10px", top: "50%", left: "50%", transform: "translate(-50% ,-50%)"
                         }} >
 
                             <FontAwesomeIcon icon={faImage} size="3x" />
@@ -300,7 +297,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ s }) => {
                                 ref={fileInputRef}
                                 onChange={handleSelectFile}
                                 style={{ display: "none" }}
-                               
+
                             />
                         </div>
 

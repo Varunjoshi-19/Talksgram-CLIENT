@@ -3,22 +3,9 @@ import styles from "../Styling/ToMessage.module.css";
 
 import { fetchSearchUser } from "../Scripts/FetchDetails.ts";
 import { MAIN_BACKEND_URL } from "../Scripts/URL.ts";
-
-export interface searchAccount {
-    _id: string,
-    username: string,
-    fullname: string,
-    followers: number,
-    following: number
-}
+import { searchAccount, ToMessageProps } from "../Interfaces/index.ts";
 
 
-
-interface ToMessageProps {
-
-    toogleButton: () => void;
-    EnableMessageTab: (value: string) => void;
-}
 
 
 const ToMessage: React.FC<ToMessageProps> = ({ toogleButton, EnableMessageTab }) => {

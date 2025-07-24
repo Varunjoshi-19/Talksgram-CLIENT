@@ -3,48 +3,11 @@ import MenuOptions from './MenuOptions';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faPause, faHeart, faComment, faShare, faEllipsisH } from "@fortawesome/free-solid-svg-icons";
 import styles from "../Styling/reels.module.css";
-import { ProfileInfo } from './AppInterface';
 import LoadingScreen from './LoadingScreen';
 import { useNavigate } from 'react-router-dom';
 import { MAIN_BACKEND_URL } from '../Scripts/URL';
+import { AllReelsType, ProfileInfo, RecievedReelType, ReelLikeAndStatus } from '../Interfaces';
 
-
-type RecievedReelType = {
-
-    _id: string;
-    reelLike: number;
-    reelComment: number;
-    reelDescription: string;
-    author: {
-        userId: string;
-        userAccId: string;
-    }
-
-
-}
-
-type AllReelsType = {
-
-    _id: string;
-    authorName: string;
-    likeStatus : boolean;
-    reelLike: number;
-    reelComment: number;
-    reelDescription: string;
-    author: {
-        userId: string;
-        userAccId: string;
-    }
-    videoRef: any;
-
-}
-
-type ReelLikeAndStatus = {
-
-    likes: number,
-    likeStatus: boolean
-
-}
 
 
 function Reels() {
@@ -57,7 +20,7 @@ function Reels() {
     const [playing, setPlaying] = useState<boolean>(true);
     const [likes, setLikes] = useState<ReelLikeAndStatus[]>([]);
 
- const navigate = useNavigate();
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -121,7 +84,7 @@ function Reels() {
                                 const authorResult = await authorResponse.json();
                                 const likeResult = await likedResponse.json();
 
-                                
+
                                 return {
                                     ...each,
                                     authorName: authorResponse.ok ? authorResult.userProfile.username : "Unknown",
@@ -152,7 +115,7 @@ function Reels() {
                         likes: each.reelLike,
                         likeStatus: each.likeStatus
                     })));
-                    
+
                 }
             }
             catch (error) {
@@ -161,7 +124,7 @@ function Reels() {
 
         }
 
-      if(!profileInfo) return;
+        if (!profileInfo) return;
 
         FetchReels();
 
@@ -240,9 +203,9 @@ function Reels() {
         }
 
         if (likeStatus) {
-              setLikes(likes.map((each, index) =>
+            setLikes(likes.map((each, index) =>
 
-                  index === Currentindex
+                index === Currentindex
                     ? {
                         likes: each.likes - 1,
                         likeStatus: !each.likeStatus
@@ -290,29 +253,31 @@ function Reels() {
     }
 
 
-if(!AllReels || !profileInfo || !videoRefs  || !reelContainer) { 
-    <LoadingScreen/>
-}
+    if (!AllReels || !profileInfo || !videoRefs || !reelContainer) {
+        <LoadingScreen />
+    }
 
     return (
-       
-       <>
+
+        <>
             <MenuOptions profile={profileInfo} />
 
             <div className={styles.reelsContainer}>
-                
+
                 <div ref={reelContainer} className={styles.reelsLayout}>
-                    { AllReels && AllReels.map((video, index) => (
+                    {AllReels && AllReels.map((video, index) => (
 
                         <div key={index} className={styles.eachReels}>
 
-                            <div  onClick={function () {
+                            <div onClick={function () {
                                 ToogleVideoPlayAndPause(videoRefs.current[index]);
                                 setPlayAndPauseButton(true);
                                 clearUi();
-                            }} style={{ zIndex :"1", 
-                           
-                            top: "0", left: "0", position: "absolute", width: "80%", height: "85%" }} > </div>
+                            }} style={{
+                                zIndex: "1",
+
+                                top: "0", left: "0", position: "absolute", width: "80%", height: "85%"
+                            }} > </div>
 
                             <video id={styles.eachReelVideo}
                                 ref={video.videoRef}
@@ -320,7 +285,7 @@ if(!AllReels || !profileInfo || !videoRefs  || !reelContainer) {
                                 loop={true}
                                 // muted
                                 src={`${MAIN_BACKEND_URL}/uploadReel/render-reel/${video._id}`}
-                               
+
                             ></video>
 
                             {PlayAndPauseButton &&
@@ -353,22 +318,22 @@ if(!AllReels || !profileInfo || !videoRefs  || !reelContainer) {
 
                             <div className={styles.reelUserInfo} >
                                 <div style={{ display: "flex", gap: "10px", alignItems: "center" }} >
-                                    <img  onClick={() => navigate(`/userProfile/${video.author.userId}`)}
-                                    src={`${MAIN_BACKEND_URL}/accounts/profileImage/${video.author.userId}`} alt="" style={{
-                                        width: "40px", height: "40px",
-                                        borderRadius: "50%",
-                                        objectFit: "cover"
-                                    }} />
+                                    <img onClick={() => navigate(`/userProfile/${video.author.userId}`)}
+                                        src={`${MAIN_BACKEND_URL}/accounts/profileImage/${video.author.userId}`} alt="" style={{
+                                            width: "40px", height: "40px",
+                                            borderRadius: "50%",
+                                            objectFit: "cover"
+                                        }} />
                                     <p>{video.authorName}</p>
                                 </div>
-                                <span style={{ fontSize : "14px" }} >
-                                {video.reelDescription.length > 40  ?  
-                               <span> {video.reelDescription.substring(0  , 140)} 
-                               <span style={{ cursor : "pointer", color : "rgb(0, 72, 255)" , fontSize : "14px"}} >...Read more</span>
-                               </span>
-                                 :  
-                                video.reelDescription   
-                                } 
+                                <span style={{ fontSize: "14px" }} >
+                                    {video.reelDescription.length > 40 ?
+                                        <span> {video.reelDescription.substring(0, 140)}
+                                            <span style={{ cursor: "pointer", color: "rgb(0, 72, 255)", fontSize: "14px" }} >...Read more</span>
+                                        </span>
+                                        :
+                                        video.reelDescription
+                                    }
                                 </span>
                             </div>
                         </div>

@@ -17,7 +17,7 @@ import CommentBox from './CommentBox.tsx';
 import LocalImagesAndVideos from '../modules/LocalImagesAndVideos.tsx';
 import { Play } from 'lucide-react';
 import ChattedUser from '../modules/ChattedUser.tsx';
-
+import { useUserAuthContext } from '../Context/UserContext.tsx';
 
 
 
@@ -28,6 +28,7 @@ function Chatting() {
     const { id } = useParams();
 
     const navigate = useNavigate();
+    const { profile } = useUserAuthContext();
 
     const videoExtension = ["mp4", "video/mp4", "webm", "ogg"];
     const imageExtension = ["jpg", "image/png", "image/jpg", "image/jpeg", "jpeg", "png", "gif", "webp"];
@@ -36,7 +37,6 @@ function Chatting() {
     const { socket } = useSocketContext();
     const [messageInputValue, setMessageInputValue] = useState<string>("");
     const [otherUserDetails, setUserDetails] = useState<ProfileProps | any>();
-    const [myProfileDetails, setMyProfileDetails] = useState<ProfileProps | any>();
     const [AllChats, setAllChats] = useState<Chat[]>([]);
     const [chatId, setChatId] = useState<string | any>("");
     const [chatLoaded, setChatLoaded] = useState<boolean>(false);
@@ -132,12 +132,12 @@ function Chatting() {
         }
 
 
-        socket.emit('seen-chat', chatId, myProfileDetails?.username);
+        socket.emit('seen-chat', chatId, profile?.username);
 
         socket.on('chat-receive', (info) => {
 
             const ChatInfo: Chat = {
-                userId: myProfileDetails?._id,
+                userId: profile?._id,
                 otherUserId: otherUserDetails?._id,
                 chatId: info.chatId,
                 senderUsername: info.senderUsername,
@@ -192,7 +192,7 @@ function Chatting() {
         return () => {
             socket.off('chat-receive');
         };
-    }, [chatId, myProfileDetails?.username, AllChats]);
+    }, [chatId, profile, AllChats]);
 
 
     useEffect(() => {
@@ -241,18 +241,17 @@ function Chatting() {
 
 
     useEffect(() => {
-       
-         document.body.style.overflowY = "hidden";
+
+        document.body.style.overflowY = "hidden";
 
         async function fetchAllBothUserData() {
-            const data = await fetchAllData(id!);
-            const { success, senderDetails, receiverDetails, chatId } = data;
+            const data = await fetchAllData(profile, id!);
+            const { success, receiverDetails, chatId } = data;
             if (!success) {
                 navigate("/error");
                 return;
             }
 
-            setMyProfileDetails(senderDetails);
             setUserDetails(receiverDetails);
             setChatId(chatId);
 
@@ -279,6 +278,7 @@ function Chatting() {
 
     function handleSendMessage() {
 
+        if (!profile) return;
 
         if (messageInputValue.length > 0) {
 
@@ -287,7 +287,7 @@ function Chatting() {
                 // for others 
                 const InfoData: InfoDataType = {
                     chat: messageInputValue,
-                    senderUsername: myProfileDetails?.username,
+                    senderUsername: profile?.username,
                     receiverUsername: otherUserDetails.username,
                     chatId: chatId,
 
@@ -295,10 +295,10 @@ function Chatting() {
                 }
                 // for local me 
                 const ChatInfo: Chat = {
-                    userId: myProfileDetails?._id,
+                    userId: profile?._id,
                     otherUserId: otherUserDetails?._id,
                     chatId: chatId,
-                    senderUsername: myProfileDetails?.username || '',
+                    senderUsername: profile?.username || '',
                     receiverUsername: otherUserDetails.username || '',
                     initateTime: Date.now().toString(),
                     chat: messageInputValue,
@@ -313,17 +313,17 @@ function Chatting() {
 
                     const MInfoData: InfoDataType = {
                         AdditionalInfoData: bufferedData,
-                        senderUsername: myProfileDetails?.username,
+                        senderUsername: profile?.username,
                         receiverUsername: otherUserDetails.username,
                         chatId: chatId,
 
                     }
 
                     const MChatInfo: Chat = {
-                        userId: myProfileDetails?._id,
+                        userId: profile?._id,
                         otherUserId: otherUserDetails?._id,
                         chatId: chatId,
-                        senderUsername: myProfileDetails?.username || '',
+                        senderUsername: profile?.username || '',
                         receiverUsername: otherUserDetails.username || '',
                         initateTime: Date.now().toString(),
                         AdditionalData: multipleItemSelected
@@ -349,17 +349,17 @@ function Chatting() {
 
             const InfoData: InfoDataType = {
                 AdditionalInfoData: bufferedData,
-                senderUsername: myProfileDetails?.username,
+                senderUsername: profile?.username,
                 receiverUsername: otherUserDetails.username,
                 chatId: chatId,
 
             }
 
             const ChatInfo: Chat = {
-                userId: myProfileDetails?._id,
+                userId: profile?._id,
                 otherUserId: otherUserDetails?._id,
                 chatId: chatId,
-                senderUsername: myProfileDetails?.username || '',
+                senderUsername: profile?.username || '',
                 receiverUsername: otherUserDetails.username || '',
                 initateTime: Date.now().toString(),
                 AdditionalData: multipleItemSelected
@@ -381,7 +381,7 @@ function Chatting() {
             const InfoData: InfoDataType = {
 
                 audioData: audioDataInfo,
-                senderUsername: myProfileDetails?.username,
+                senderUsername: profile?.username,
                 receiverUsername: otherUserDetails.username,
                 chatId: chatId,
 
@@ -389,10 +389,10 @@ function Chatting() {
             }
 
             const ChatInfo: Chat = {
-                userId: myProfileDetails?._id,
+                userId: profile?._id,
                 otherUserId: otherUserDetails?._id,
                 chatId: chatId,
-                senderUsername: myProfileDetails?.username || '',
+                senderUsername: profile?.username || '',
                 receiverUsername: otherUserDetails.username || '',
                 initateTime: Date.now().toString(),
                 AdditionalData: audioDataInfo
@@ -411,16 +411,16 @@ function Chatting() {
             setBufferedData([]);
         }
 
-        if (myProfileDetails._id === otherUserDetails._id) return;
+        if (profile._id === otherUserDetails._id) return;
 
         const reelTimeData = {
-            senderId: myProfileDetails._id,
+            senderId: profile._id,
             receiverId: otherUserDetails._id,
-            userId: myProfileDetails._id,
+            userId: profile._id,
             chatId: chatId,
             yourMessage: false,
-            checkName: myProfileDetails.username,
-            username: myProfileDetails.username,
+            checkName: profile.username,
+            username: profile.username,
             seenStatus: false,
             initateTime: Date.now() - 2 * 1000,
             recentChat: messageInputValue || null,
@@ -437,6 +437,9 @@ function Chatting() {
     async function fetchChatsFromDatabase() {
 
         setChatLoaded(false);
+        setTimeout(() => {
+
+        }, 4000);
         const response = await fetch(`${MAIN_BACKEND_URL}/Personal-chat/fetch-all-personal-chats/${chatId}?chatSkip=${chatSkip}`, {
             method: "POST",
         });
@@ -458,6 +461,7 @@ function Chatting() {
 
                 console.log("spread one exectuted");
                 console.log(result);
+
                 setAllChats(prevChats => [...result, ...prevChats]);
                 setChatSkip(prev => prev + 10);
 
@@ -675,13 +679,29 @@ function Chatting() {
     }
 
 
+    const [showMain, setShowMain] = useState<boolean>(false);
+
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowMain(true);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+
+
+    if (!showMain || !profile) {
+        return <LoadingScreen />
+    }
 
 
     return (
         <>
-            {!myProfileDetails && !otherUserDetails ? <LoadingScreen /> : <div>
+            {!profile && !otherUserDetails ? <LoadingScreen /> : <div>
 
-                <MenuOptions profile={myProfileDetails} />
+                <MenuOptions profile={profile} />
                 {displaySelectedItem && <LocalImagesAndVideos item={selectedItem} type={typeOfItem} setCloseImage={setSelectedItem} />}
 
                 {toogleCommentBox && <CommentBox id={postId} toogleBox={closeCommentInfoBox}
@@ -692,7 +712,7 @@ function Chatting() {
                 <div className={styles.allMessages} >
 
                     <div className={styles.usernameAndIcon} >
-                        <p>{myProfileDetails?.username}</p>
+                        <p>{profile?.username}</p>
                         <FontAwesomeIcon icon={faEdit} />
                     </div>
 
@@ -792,12 +812,12 @@ function Chatting() {
 
                         {/*  ALL CHATS RENDERING */}
 
-                        {AllChats &&
+                        {AllChats ?
 
                             AllChats.map((chat, index) => (
                                 <div ref={chatContainerRef}
                                     key={index}
-                                    className={`${styles.message} ${chat.senderUsername === myProfileDetails?.username ? styles.me : styles.other
+                                    className={`${styles.message} ${chat.senderUsername === profile?.username ? styles.me : styles.other
                                         }`}
                                 >
 
@@ -807,7 +827,7 @@ function Chatting() {
                                         <>
                                             <p
                                                 className={
-                                                    chat.senderUsername === myProfileDetails?.username ? styles.myTextMessage : styles.otherMessage
+                                                    chat.senderUsername === profile?.username ? styles.myTextMessage : styles.otherMessage
                                                 }
                                             >
                                                 {chat.chat}
@@ -825,7 +845,7 @@ function Chatting() {
                                     {chat.temporaryAddData &&
 
 
-                                        <div style={{ display: "flex", padding: "3px", margin: "3px", width: "auto", maxWidth: "500px", gap: "8px", flexWrap: "wrap", justifyContent: `${chat.senderUsername === myProfileDetails?.username ? "flex-end" : "flex-start"}` }} >
+                                        <div style={{ display: "flex", padding: "3px", margin: "3px", width: "auto", maxWidth: "500px", gap: "8px", flexWrap: "wrap", justifyContent: `${chat.senderUsername === profile?.username ? "flex-end" : "flex-start"}` }} >
 
                                             {chat.temporaryAddData?.map((each) => {
                                                 if (videoExtension.includes(each.extensionName)) {
@@ -883,7 +903,7 @@ function Chatting() {
                                         chat.AdditionalData &&
 
 
-                                        <div style={{ display: "flex", width: "auto", maxWidth: "500px", gap: "8px", flexWrap: "wrap", justifyContent: `${chat.senderUsername === myProfileDetails?.username ? "flex-end" : "flex-start"}` }} >
+                                        <div style={{ display: "flex", width: "auto", maxWidth: "500px", gap: "8px", flexWrap: "wrap", justifyContent: `${chat.senderUsername === profile?.username ? "flex-end" : "flex-start"}` }} >
                                             {chat.AdditionalData?.map((each: AdditionalDataType) => {
                                                 if (videoExtension.includes(each.contentType)) {
                                                     return (
@@ -930,7 +950,7 @@ function Chatting() {
                                                             key={each._id}
                                                             src={`${MAIN_BACKEND_URL}/Personal-chat/render-message-items/${chat._id}/${each._id}`}
                                                             alt="image"
-                                                            style={{ marginBottom: "5px", borderRadius: "10px", width: "300px", objectFit: "contain", objectPosition: "center", cursor: "pointer" }}
+                                                            style={{ margin: "3px", borderRadius: "10px", width: "300px", objectFit: "contain", objectPosition: "center", cursor: "pointer" }}
 
                                                         />
                                                     );
@@ -976,9 +996,13 @@ function Chatting() {
                                     <div ref={lastMessageRef} ></div>
 
                                 </div>
+                            ))
 
-
-                            ))}
+                            :
+                            <div>
+                                loading....
+                            </div>
+                        }
 
 
                         {/* MESSAGE INPUT BOX   */}

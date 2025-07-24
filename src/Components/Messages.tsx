@@ -3,36 +3,24 @@ import styles from '../Styling/Messages.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { faEdit, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ToMessage from "./ToMessage";
 import { useNavigate } from "react-router-dom";
-import { fetchProfileDetails  } from "../Scripts/FetchDetails.ts";
 
 
-import { ProfileInfo } from "../Components/Profile.tsx";
 import ChattedUser from "../modules/ChattedUser.tsx";
+import { useUserAuthContext } from "../Context/UserContext.tsx";
 
 
 
 function Messages() {
 
    const [ToMessagePopUp, setToMessagePopUp] = useState<boolean>(false);
-   const [profileDetails, setProfileDetails] = useState<ProfileInfo | any>();
+   const { profile } = useUserAuthContext();
    const navigate = useNavigate();
 
 
-   useEffect(() => {
-
-      async function ProfileDetails() {
-         const result: any = await fetchProfileDetails();
-         setProfileDetails(result);
-      }
-
-      ProfileDetails();
-   }, []);
-
-
-   async function redirectToChattingPage(otherUserInfo: string) { 
+   async function redirectToChattingPage(otherUserInfo: string) {
 
       const parsedOtherUserInfo = JSON.parse(otherUserInfo);
       const otherProfileId = parsedOtherUserInfo._id;
@@ -46,16 +34,22 @@ function Messages() {
    }
 
 
+   if (!profile) {
+      navigate("/");
+      return;
+   }
+
+
    return (
       <>
          {ToMessagePopUp && <ToMessage toogleButton={handleMessageButton} EnableMessageTab={redirectToChattingPage} />}
 
-         <MenuOptions profile={profileDetails} />
+         <MenuOptions profile={profile} />
 
          <div className={styles.allMessages} >
 
             <div className={styles.usernameAndIcon} >
-               <p>{profileDetails?.username}</p>
+               <p>{profile?.username}</p>
                <FontAwesomeIcon icon={faEdit} />
             </div>
 

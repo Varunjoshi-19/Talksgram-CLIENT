@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styles from "../Styling/Login.module.css";
 import { useNavigate } from "react-router-dom";
-import {  useUserAuthContext } from "../Context/UserContext"
+import { ACTIONS, useUserAuthContext } from "../Context/UserContext"
 import { MAIN_BACKEND_URL } from "../Scripts/URL.ts";
 import { useSocketContext } from "../Context/SocketContext.tsx";
-import { fetchProfileDetails } from "../Scripts/FetchDetails.ts";
-
-// interface Info {
-
-//     id: string,
-//     username: string,
-//     email: string
-
-// }
-
-
 
 
 function Login() {
@@ -93,34 +82,22 @@ function Login() {
 
     async function operationsRelatedOnLogin(result: any) {
 
-        const { id, username, email } = result.UserData.user;
-        const info: any = { id, username, email };
-
-        localStorage.setItem("user-token", JSON.stringify(info));
-        dispatch({ type: "set", payload: info });
+        const profile = result.data.profile;
+        localStorage.setItem("profile-details", JSON.stringify(profile));
+        dispatch({ type: ACTIONS.SET_PROFILE, payload: profile });
 
         setError(null);
         setMessage(result.message);
         navigate("/");
-        handleSendOnlineStatus(result);
-
-        
+        handleSendOnlineStatus(result.profile);
 
 
     }
 
-
-    async function handleSendOnlineStatus(result: any) {
-
-        const id = result.UserData.user.id;
-        const user = await fetchProfileDetails(id);
-        const userId = user._id;
-        socket.emit("online", { userId: userId, username: result.UserData.user.username });
-        console.log(`User offline with socket id ${socket.id} and user id ${userId}`);
-        localStorage.setItem("profile-details", JSON.stringify(user));
-
-
-
+    async function handleSendOnlineStatus(profile: any) {
+        const id = profile._id;
+        const username = profile.username;
+        socket.emit("online", { userId: id, username: username });
     }
 
     return (
@@ -153,9 +130,7 @@ function Login() {
                         <span>OR</span>
                         <div className={styles.line}></div>
                     </div>
-                    <button className={styles.facebookLogin}>
-                        Log in with Facebook
-                    </button>
+
                     <a href="/accounts/password/reset" className={styles.forgotPassword}>
                         Forgot password?
                     </a>

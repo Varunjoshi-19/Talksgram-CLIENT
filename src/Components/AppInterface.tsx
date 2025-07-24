@@ -14,39 +14,15 @@ import CommentBox from "./CommentBox";
 import { MAIN_BACKEND_URL } from "../Scripts/URL.ts";
 import ShareDilogBox from "../modules/ShareDilogBox.tsx";
 import { Heart, MessageCircle, Send } from 'lucide-react';
-import { ACTIONS, useUserAuthContext } from "../Context/UserContext.tsx";
+import { useUserAuthContext } from "../Context/UserContext.tsx";
+import { AllPostsProps, ProfilePayload, } from "../Interfaces/index.ts";
 
-export interface ProfileInfo {
-  _id: string,
-  username: string,
-  fullname: string,
-  post: number,
-  bio: string,
-  followers: number,
-  following: number
-};
 
-export interface AllPostsProps {
-
-  _id: string;
-  authorName: string;
-  likeStatus: boolean;
-  postLike: number;
-  postComment: number;
-  postShare: number;
-  postDescription: string;
-  createdAt: string,
-  author: {
-    userId: string;
-    userAccId: string;
-  }
-}[];
 
 
 function AppInterface() {
 
-  const [profileInfo, setProfileInfo] = useState<ProfileInfo | null>(null);
-  const [allAccounts, setAllAccounts] = useState<ProfileInfo[]>([]);
+  const [allAccounts, setAllAccounts] = useState<ProfilePayload[]>([]);
   const [uploadedPosts, setUploadedPosts] = useState<AllPostsProps[]>([]);
   const [postId, setPostId] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
@@ -67,81 +43,32 @@ function AppInterface() {
 
 
   const { toogleVisiblility, setSearchInput, searchInput } = useToogle();
-  const { dispatch } = useUserAuthContext();
-
-  useEffect(() => {
-
-    async function fetchProfileInformation() {
-      const profile = localStorage.getItem("user-token");
-      if (profile) {
-        const parsedProfile = JSON.parse(profile);
-        const id = parsedProfile.id;
-
-        const response = await fetch(`${MAIN_BACKEND_URL}/accounts/fetchProfileDetails/${id}`, { method: "POST" });
-        const result = await response.json();
-
-        if (response.ok) {
-          const { email, followers, following, post, userAccId, username, _id, createdAt, fullname } = result.userProfile;
-
-          const dataToStore: any = { email, followers, following, post, userAccId, username, _id, createdAt, fullname };
-
-          setProfileInfo(dataToStore);
-          dispatch({ type: ACTIONS.SET_PROFILE, payload: dataToStore });
-          localStorage.setItem("profile-details", JSON.stringify(dataToStore))
-        }
-      }
-    }
-
-    async function fetchAllAccounts() {
-
-      let parsedUser;
-      const user = localStorage.getItem("user-token");
-      if (user) {
-        parsedUser = JSON.parse(user);
-
-      }
-
-
-      const response = await fetch(`${MAIN_BACKEND_URL}/accounts/allAccounts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify(parsedUser)
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-
-        setAllAccounts(result.allAccounts);
-      }
-
-
-    }
-
-
-
-    fetchProfileInformation();
-    fetchAllAccounts();
-
-  }, []);
+  const { profile } = useUserAuthContext();
 
 
   useEffect(() => {
 
-    if (!profileInfo || profileInfo?._id == "") {
-      return;
-    }
-
-    else {
-
+    (() => {
+      if (!profile || profile?._id == "") {
+        return;
+      }
       fetchAllPosts();
+      fetchAllAccounts();
+    })();
+
+  }, [profile]);
+
+
+  async function fetchAllAccounts() {
+
+    const email = profile?.email;
+    const response = await fetch(`${MAIN_BACKEND_URL}/accounts/allAccounts?email=${email}`);
+    const result = await response.json();
+    if (response.ok) {
+      setAllAccounts(result.allAccounts);
     }
 
-  }, [profileInfo]);
-
+  }
 
   async function fetchAllPosts() {
     try {
@@ -156,11 +83,11 @@ function AppInterface() {
 
               const IdInfo = {
                 postId: post._id,
-                userId: profileInfo?._id,
+                userId: profile?._id,
               }
 
-              const [authorResponse, likeResponse] = await Promise.all([
-                fetch(`${MAIN_BACKEND_URL}/accounts/fetchOtherUser/${post.author.userId}`, { method: "POST" }),
+              const [profileResponse, likeResponse] = await Promise.all([
+                fetch(`${MAIN_BACKEND_URL}/accounts/getIdAndUsername/${post.author.userId}`),
                 fetch(`${MAIN_BACKEND_URL}/uploadPost/fetchLikePost`, {
 
                   method: "POST",
@@ -173,14 +100,14 @@ function AppInterface() {
                 }),
               ]);
 
-              const authorResult = await authorResponse.json();
+              const profileResult = await profileResponse.json();
               const likeResult = await likeResponse.json();
 
               setCurrentPostCount(prevCount => prevCount + 1);
 
               return {
                 ...post,
-                authorName: authorResponse.ok ? authorResult.userProfile.username : "Unknown",
+                authorName: profileResponse.ok ? profileResult.username : "Unknown",
                 likeStatus: likeResponse.ok && likeResponse.status == 200 ? likeResult.likeStatus : false,
               };
             }
@@ -227,7 +154,7 @@ function AppInterface() {
 
     const idInfo = {
       postId: id,
-      userId: profileInfo?._id
+      userId: profile?._id
     }
 
     if (likeStatus) {
@@ -320,9 +247,7 @@ function AppInterface() {
   }
 
 
-
-
-  if (!profileInfo) {
+  if (!profile) {
     return <LoadingScreen />
   }
 
@@ -382,7 +307,7 @@ function AppInterface() {
 
       {/* left side options  */}
 
-      <MenuOptions profile={profileInfo} />
+      <MenuOptions profile={profile} />
 
       {toogleCommentBox && <CommentBox id={postId} toogleBox={closeCommentInfoBox}
         userInfoF={ProvideInfoToCommentBox}
@@ -492,12 +417,12 @@ function AppInterface() {
 
           <div className={styles.UserProfile}>
             <div className={styles.userImage}>
-              <img src={`${MAIN_BACKEND_URL}/accounts/profileImage/${profileInfo?._id}`} width="100%" height="100%" alt="_pic" />
+              <img src={`${MAIN_BACKEND_URL}/accounts/profileImage/${profile?._id}`} width="100%" height="100%" alt="_pic" />
             </div>
 
             <div>
-              <p>{profileInfo?.username}</p>
-              <p>{profileInfo?.fullname}</p>
+              <p>{profile?.username}</p>
+              <p>{profile?.fullname}</p>
             </div>
           </div>
 

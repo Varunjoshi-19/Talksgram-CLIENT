@@ -8,29 +8,13 @@ import { faCog, faComment, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
 import { useEffect, useState } from "react";
 
 
-import { fetchOtherUserDetails, fetchProfileDetails } from "../Scripts/FetchDetails";
-
-import { ProfileInfo } from "../Components/Profile";
 import LoadingScreen from './LoadingScreen';
 import { MAIN_BACKEND_URL } from '../Scripts/URL';
 import { useSocketContext } from '../Context/SocketContext';
 import { useUserAuthContext } from '../Context/UserContext';
 import CommentBox from './CommentBox';
-
-
-
-interface AllPostsProps {
-
-    _id: string;
-    postLike: number;
-    postComment: number;
-    postDescription: string;
-    author: {
-        userId: string;
-        userAccId: string;
-    }
-    createdAt: string;
-}
+import { fetchProfileDetails } from '../Scripts/FetchDetails';
+import { AllPostsProps, ProfileInfo } from '../Interfaces';
 
 
 
@@ -40,14 +24,11 @@ function UserProfile() {
     const navigate = useNavigate();
 
     const { socket } = useSocketContext();
-    const { user } = useUserAuthContext();
+    const { profile } = useUserAuthContext();
 
     const [profileInfo, setProfileInfo] = useState<ProfileInfo | any>();
-    const [myProfileInfo, setMyProfileInfo] = useState<ProfileInfo | any>();
     const [showStatus, setShowStatus] = useState<string>("Follow");
     const [allPosts, setAllPosts] = useState<AllPostsProps[]>([]);
-    const [lazyLoading, setLazyLoading] = useState<boolean>(true);
-    const [contentReady, setContentReady] = useState<boolean>(false);
     const [selectedPostUsername, setSelectedPostUsername] = useState<string>("");
     const [currentLikes, setCurrentLikes] = useState<number>(0);
     const [createdAtTime, setCreatedAt] = useState<string>("");
@@ -60,10 +41,17 @@ function UserProfile() {
 
     useEffect(() => {
 
+        (async () => {
 
-        async function fetchProfileInfo() {
+            const user = await fetchProfileDetails(id);
 
-            const user = await fetchOtherUserDetails(id);
+            if (profile) {
+                if (id == profile._id) {
+                    navigate("/accounts/profile");
+                    return;
+                }
+
+            }
 
             if (!user) {
                 navigate("/error");
@@ -71,16 +59,9 @@ function UserProfile() {
             }
             setProfileInfo(user);
 
-            const profile = await fetchProfileDetails();
-            if (id == profile._id) {
-                navigate("/accounts/profile");
-                return;
-            }
-            setMyProfileInfo(profile);
-        }
+        })();
 
-        async function fetchAllPosts() {
-
+        (async () => {
             const response = await fetch(`${MAIN_BACKEND_URL}/uploadPost/allPosts/${id}`, { method: "POST" });
 
             const result = await response.json();
@@ -91,21 +72,16 @@ function UserProfile() {
             if (!response.ok) {
                 setAllPosts([]);
             }
-        }
+        })();
 
 
-
-        fetchProfileInfo();
-        fetchAllPosts();
-
-
-    }, [id]);
-
+    }, [id, profile]);
 
 
     useEffect(() => {
+
         async function checkFollowStatus() {
-            const userIdOf = myProfileInfo?._id;
+            const userIdOf = profile?._id;
             const userIds = {
                 userId: profileInfo?._id,
                 userIdOf: userIdOf
@@ -156,10 +132,9 @@ function UserProfile() {
         }
 
         checkFollowStatus();
-        setLazyLoading(false);
-        setContentReady(true);
-    }, [myProfileInfo]);
+    }, [profile , profileInfo]);
 
+    
 
     function handleOpenCommentBox(id: string, username: string, userId: string, currentLikes: number, createdAt: string) {
 
@@ -192,6 +167,8 @@ function UserProfile() {
 
     async function handleFollowUser() {
 
+        if (!profile) return;
+
         let followInfo = {
 
             userId: "",
@@ -204,31 +181,24 @@ function UserProfile() {
 
 
 
-        followInfo.userIdOf = myProfileInfo?._id;
-        followInfo.usernameOf = myProfileInfo?.username;
+        followInfo.userIdOf = profile?._id;
+        followInfo.usernameOf = profile?.username;
 
 
         if (showStatus == "Requested") {
-
-            const response = await fetch(`${MAIN_BACKEND_URL}/Personal-chat/removeFromRequested`, {
+            setShowStatus("Follow");
+            await fetch(`${MAIN_BACKEND_URL}/Personal-chat/removeFromRequested`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(followInfo)
-            })
-
-            const result = await response.json();
-            if (response.ok && response.status == 202) {
-                setShowStatus(result.status)
-                return;
-            }
-
+            });
         }
 
         if (showStatus == "Follow") {
 
-
+            setShowStatus("Requested");
             const response = await fetch(`${MAIN_BACKEND_URL}/Personal-chat/SendFollowRequest`, {
 
                 method: "POST",
@@ -238,35 +208,24 @@ function UserProfile() {
                 body: JSON.stringify(followInfo)
             })
 
-            const result = await response.json();
-
             if (response.ok && response.status == 202) {
-
-                // SEND NOTIFCATION USING SOCKET TO THE USER AS IT FOLLOWS THE USER  AND EMIT THE USER ONE  HE REQUEST SEND 
 
                 const data = {
                     socketId: socket.id,
                     receiverUserID: userId,
-                    senderUserID: user?.id,
-                    username: user?.username
+                    senderUserID: profile._id,
+                    username: profile.username
                 }
 
                 socket.emit("follow-request", data);
-
-
-                setShowStatus(result.status);
-                return;
-            }
-            if (response.ok && response.status == 204) {
-                setShowStatus(result.status);
                 return;
             }
 
         }
 
         if (showStatus == "Following") {
-
-            const response = await fetch(`${MAIN_BACKEND_URL}/Personal-chat/removeFollower`, {
+               setShowStatus("Follow");
+             await fetch(`${MAIN_BACKEND_URL}/Personal-chat/removeFollower`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -275,34 +234,36 @@ function UserProfile() {
 
             })
 
-            const result = await response.json();
-            if (response.ok && response.status == 202) {
-                setShowStatus("Follow");
-            }
-            if (response.ok && response.status == 204) {
-                setShowStatus(result.status);
-            }
+
 
         }
 
     }
 
 
-    if (lazyLoading || !profileInfo || showStatus == "" || !myProfileInfo || !allPosts) {
-
-        return <LoadingScreen />
-    }
+    const [showMain, setShowMain] = useState<boolean>(false);
 
 
-    if (!contentReady) {
-        return <LoadingScreen />
-    }
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowMain(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!showMain || !profileInfo) {
+    return <LoadingScreen />
+  }
+
+
+
 
 
     return (
         <>
 
-            {myProfileInfo != null && <MenuOptions profile={myProfileInfo} />}
+            {profile != null && <MenuOptions profile={profile} />}
             {toogleCommentBox &&
                 <CommentBox id={postId}
                     toogleBox={closeCommentInfoBox}

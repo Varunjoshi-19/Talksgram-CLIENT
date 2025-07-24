@@ -55,6 +55,26 @@
 
 }
 
+
+.CustomButton {
+  padding: 5px 5px;
+  font-size: 15px;
+  color: white;
+  display: flex;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 80px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 300ms;
+}
+
+.CustomButton:hover {
+  transform: scale(1.1);
+}
+
+
 .NotificationContainer .AllNotifications .eachNotification:hover {
 
   background-color: rgba(112, 112, 112, 0.507);
@@ -73,13 +93,16 @@
 
 
 
+
+
+
 @media (max-width : 764px) {
 
 
-.NotificationContainer {
-   display: none;
-}
-  
+  .NotificationContainer {
+    display: none;
+  }
+
 }
 
 @media (max-width : 1250px) {

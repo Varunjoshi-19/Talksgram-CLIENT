@@ -1,28 +1,24 @@
 import { useEffect, useState } from "react";
 import styles from "../Styling/NotificationPage.module.css";
-import { fetchProfileDetails } from "../Scripts/FetchDetails.js";
 import { MAIN_BACKEND_URL } from "../Scripts/URL.js";
+import { useUserAuthContext } from "../Context/UserContext.js";
+import { NotificationProps } from "../Interfaces/index.js";
 
-interface NotificationProps {
 
-    userId: string,
-    userIdOf: string,
-    usernameOf: string
-}
 
 function NotificationPage() {
 
     const [AllNotifications, setAllNotifications] = useState<NotificationProps[]>([]);
     const [message, setMessage] = useState<string | null>(null);
+    const { profile } = useUserAuthContext();
 
 
     useEffect(() => {
 
         async function fetchAllRequests() {
+            if (!profile) return;
 
-            const profile = await fetchProfileDetails();
             const id = profile._id;
-
             const response = await fetch(`${MAIN_BACKEND_URL}/Personal-chat/fetchRequests/${id}`, { method: "POST" });
 
             const result = await response.json();
@@ -33,12 +29,9 @@ function NotificationPage() {
 
         }
 
-
-
-
         fetchAllRequests();
 
-    }, []);
+    }, [profile]);
 
     useEffect(() => {
 

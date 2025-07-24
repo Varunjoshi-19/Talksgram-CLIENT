@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { io, Socket } from "socket.io-client";
 import { useUserAuthContext } from "./UserContext";
-import { fetchProfileDetails, seenAllChats } from "../Scripts/FetchDetails";
+import {  seenAllChats } from "../Scripts/FetchDetails";
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
 import { useChatContext } from "./ChattedUserContext";
 import { CountMessages } from "../Scripts/GetData";
@@ -35,7 +35,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     }), []);
 
 
-    const { user } = useUserAuthContext();
+    const { profile } = useUserAuthContext();
 
     const [notification, setNotification] = useState<any>();
     const { setChattedUsers, setMessageCount } = useChatContext();
@@ -51,13 +51,12 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     async function handleForwardDetails() {
 
-        if (!user) return;
+        if (!profile) return;
 
-        const userProfile = await fetchProfileDetails(user.id);
-        const userId = userProfile._id;
+        const userId = profile._id;
 
         const connectionDetails = {
-            username: user?.username,
+            username: profile?.username,
             socketId: socket.id,
             userId: userId,
         }
@@ -141,7 +140,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
             socket.off("connDetailsReq", handleForwardDetails);
         }
 
-    }, [user, socket]);
+    }, [profile, socket]);
 
 
     return (

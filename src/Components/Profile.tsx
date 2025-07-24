@@ -8,31 +8,10 @@ import EditProfile from "./EditProfile";
 import LoadingScreen from "./LoadingScreen";
 import CommentBox from "./CommentBox";
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
-
-
-export interface ProfileInfo {
-    _id: string | any,
-    username: string,
-    fullname: string,
-    post: number,
-    bio: string,
-    followers: number,
-    following: number
-};
-
-
-interface AllPostsProps {
-
-    _id: string;
-    postLike: number;
-    postComment: number;
-    postDescription: string;
-    author: {
-        userId: string;
-        userAccId: string;
-    }
-    createdAt: string;
-}
+import { ACTIONS, useUserAuthContext } from "../Context/UserContext";
+import { fetchProfileLocalStorage } from "../Scripts/FetchDetails";
+import { useNavigate } from "react-router-dom";
+import { AllPostsProps } from "../Interfaces";
 
 
 
@@ -41,7 +20,6 @@ function Profile() {
     const [selectedOption, setSelectedOption] = useState<string>("POST");
     const [uploadPostPopUp, setUploadPostPopUp] = useState<boolean>(false);
     const [allPosts, setAllPosts] = useState<AllPostsProps[]>([]);
-    const [profileInfo, setProfileInfo] = useState<ProfileInfo>();
     const [enableEditProfile, setEnableEditProfile] = useState<boolean>(false);
     const [postId, setPostId] = useState<string>("");
     const [userId, setUserId] = useState<string>("");
@@ -49,14 +27,14 @@ function Profile() {
     const [selectedPostUsername, setSelectedPostUsername] = useState<string>("");
     const [currentLikes, setCurrentLikes] = useState<number>(0);
     const [createdAtTime, setCreatedAt] = useState<string>("");
+    const { profile, dispatch } = useUserAuthContext();
 
-    let id: string;
+    const navigate = useNavigate();
 
 
     function UploadNewPostOption() {
         setUploadPostPopUp(c => !c);
     }
-
 
     function handleEditProfile() {
         setEnableEditProfile(c => !c);
@@ -94,55 +72,13 @@ function Profile() {
 
     useEffect(() => {
 
-        const profile = localStorage.getItem("user-token");
-        if (profile) {
-            const parsedProfile = JSON.parse(profile);
-            id = parsedProfile.id;
-
-        }
-
-        async function fetchProfileInformation() {
-
-            if (id == "" || !id) {
-                return;
-            }
-
-
-            const response = await fetch(`${MAIN_BACKEND_URL}/accounts/fetchProfileDetails/${id}`, {
-                method: "POST"
-            })
-
-            const result = await response.json();
-
-            if (response.ok) {
-                setProfileInfo(result.userProfile);
-
-            }
-
-
-
-        }
-
-
-
-        fetchProfileInformation();
-
-
-    }, [])
-
-
-    useEffect(() => {
-
-
-
         async function fetchAllPosts() {
 
-            if (!profileInfo?._id || profileInfo?._id == "") {
+            if (!profile?._id || profile?._id == "") {
                 return;
             }
 
-
-            const response = await fetch(`${MAIN_BACKEND_URL}/uploadPost/allPosts/${profileInfo?._id}`, { method: "POST" });
+            const response = await fetch(`${MAIN_BACKEND_URL}/uploadPost/allPosts/${profile?._id}`, { method: "POST" });
 
             const result = await response.json();
             if (response.ok) {
@@ -156,21 +92,44 @@ function Profile() {
 
         fetchAllPosts();
 
-    }, [profileInfo])
+    }, [profile])
 
 
 
-    if (!profileInfo) {
+    if (!profile) {
+        // FETCH THE PROFILE FROM THE LOCAL STORAGE...
+        (async () => {
+            const profile = await fetchProfileLocalStorage();
+            if (!profile) navigate("/login");
+            dispatch({ type: ACTIONS.REMOVE_PROFILE, payload: profile });
+        })();
+    }
+
+    const [showMain, setShowMain] = useState<boolean>(false);
+
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowMain(true);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (!showMain || !profile) {
         return <LoadingScreen />
     }
+
+
+
 
     return (
         <div>
             {uploadPostPopUp && <CreatePost s={UploadNewPostOption} />}
 
-            {profileInfo != null && <MenuOptions profile={profileInfo} />}
+            {profile != null && <MenuOptions profile={profile} />}
 
-            {enableEditProfile && <EditProfile profileInfo={profileInfo} s={handleEditProfile} />}
+            {enableEditProfile && <EditProfile profileInfo={profile} s={handleEditProfile} />}
             {toogleCommentBox &&
                 <CommentBox id={postId}
                     toogleBox={closeCommentInfoBox}
@@ -183,27 +142,27 @@ function Profile() {
                 <div className={styles.profileInformation}>
 
                     <div className={styles.profileImage} >
-                        <img src={`${MAIN_BACKEND_URL}/accounts/profileImage/${profileInfo?._id}`} alt="_profileImage" width="100%" height="100%" />
+                        <img src={`${MAIN_BACKEND_URL}/accounts/profileImage/${profile?._id}`} alt="_profileImage" width="100%" height="100%" />
                     </div>
 
                     <div className={styles.profileInfo} >
 
                         <div style={{ display: "flex", gap: "25px", alignItems: "center" }} >
-                            <span style={{ fontSize: "1.05rem" }} >{profileInfo?.username}</span>
+                            <span style={{ fontSize: "1.05rem" }} >{profile?.username}</span>
                             <button onClick={handleEditProfile} style={{ cursor: "pointer", fontSize: "1.03rem", color: "white", backgroundColor: "rgba(82, 78, 78, 0.712)", padding: "5px 10px", borderRadius: "5px", border: 'none', fontWeight: "bolder" }}>Edit Profile</button>
                             <button style={{ fontSize: "1.03rem", color: "white", backgroundColor: "rgba(82, 78, 78, 0.712)", padding: "5px 10px", borderRadius: "5px", border: 'none', fontWeight: "bolder" }}>View Archieve</button>
                             <span><FontAwesomeIcon icon={faCog} /></span>
                         </div>
 
                         <div style={{ display: "flex", gap: "25px" }}>
-                            <p><span style={{ fontWeight: "bolder" }}>{profileInfo?.post}</span> post</p>
-                            <p><span style={{ fontWeight: "bolder" }}>{profileInfo?.followers} </span>{profileInfo?.followers > 1 ? " followers" : "follower"}</p>
-                            <p><span style={{ fontWeight: "bolder" }}>{profileInfo?.following} </span>{profileInfo?.following > 1 ? " followings" : "following"}</p>
+                            <p><span style={{ fontWeight: "bolder" }}>{profile?.post}</span> post</p>
+                            <p><span style={{ fontWeight: "bolder" }}>{profile?.followers} </span>{profile?.followers > 1 ? " followers" : "follower"}</p>
+                            <p><span style={{ fontWeight: "bolder" }}>{profile?.following} </span>{profile?.following > 1 ? " followings" : "following"}</p>
                         </div>
-                        <div><span style={{ fontWeight: "bolder" }}>{profileInfo?.fullname}</span></div>
+                        <div><span style={{ fontWeight: "bolder" }}>{profile?.fullname}</span></div>
 
                         <div style={{ display: "flex" }}>
-                            {profileInfo?.bio}
+                            {profile?.bio}
                         </div>
                     </div>
 
@@ -234,9 +193,9 @@ function Profile() {
                 <div className={styles.postContainer} >
 
                     <div >
-                        <span onClick={() =>  setSelectedOption("POST")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${selectedOption == "POST" ?  "1px solid white" : "none" }` }} >POSTS</span>
-                        <span onClick={() =>  setSelectedOption("SAVED")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${selectedOption == "SAVED" ?  "1px solid white" : "none" }` }} >SAVED</span>
-                        <span onClick={() =>  setSelectedOption("TAGGED")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${selectedOption == "TAGGED" ?  "1px solid white" : "none" }` }} >TAGGED</span>
+                        <span onClick={() => setSelectedOption("POST")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${selectedOption == "POST" ? "1px solid white" : "none"}` }} >POSTS</span>
+                        <span onClick={() => setSelectedOption("SAVED")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${selectedOption == "SAVED" ? "1px solid white" : "none"}` }} >SAVED</span>
+                        <span onClick={() => setSelectedOption("TAGGED")} style={{ cursor: "pointer", padding: "10px 10px", borderTop: `${selectedOption == "TAGGED" ? "1px solid white" : "none"}` }} >TAGGED</span>
                     </div>
 
 
@@ -248,57 +207,57 @@ function Profile() {
 
                 {selectedOption === "POST" &&
 
-                 <div style={{  position : "relative" , left : "10%"  }}> 
-                 {
-                       allPosts.length > 0 ?
+                    <div style={{ position: "relative", left: "10%" }}>
+                        {
+                            allPosts.length > 0 ?
 
-                    <div className={styles.allPostsContainer} >
+                                <div className={styles.allPostsContainer} >
 
-                        {allPosts.map((post, index) => (
+                                    {allPosts.map((post, index) => (
 
 
 
-                            <div onClick={() => handleOpenCommentBox(post._id, profileInfo.username, post.author.userId, post.postLike, post.createdAt)} key={index}
-                                className={styles.eachPost}>
+                                        <div onClick={() => handleOpenCommentBox(post._id, profile.username, post.author.userId, post.postLike, post.createdAt)} key={index}
+                                            className={styles.eachPost}>
 
-                                <img src={`${MAIN_BACKEND_URL}/uploadPost/postImage/${post?._id}`}
-                                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                                    alt="image" />
+                                            <img src={`${MAIN_BACKEND_URL}/uploadPost/postImage/${post?._id}`}
+                                                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                                                alt="image" />
 
-                                <div id={styles.likeAndComment} >
-                                    <p style={{ display: "flex", gap: "5px" }} >{post.postLike}<FontAwesomeIcon icon={faThumbsUp} /> </p>
-                                    <p style={{ display: "flex", gap: "5px" }} >{post.postComment}<FontAwesomeIcon icon={faComment} /> </p>
+                                            <div id={styles.likeAndComment} >
+                                                <p style={{ display: "flex", gap: "5px" }} >{post.postLike}<FontAwesomeIcon icon={faThumbsUp} /> </p>
+                                                <p style={{ display: "flex", gap: "5px" }} >{post.postComment}<FontAwesomeIcon icon={faComment} /> </p>
+                                            </div>
+                                        </div>
+
+
+
+
+
+
+                                    ))}
+
                                 </div>
-                            </div>
+                                :
+                                <div style={{ display: "flex", gap: "15px", flexDirection: "column", alignItems: "center", }} >
 
+                                    <div id={styles.cameraIcon}>
+                                        <FontAwesomeIcon icon={faCamera} size="3x" />
 
+                                    </div>
 
+                                    <p style={{ fontSize: "25px", fontWeight: "bolder" }} >Share photos</p>
+                                    <p >when you share photos ,they will appear on your profile</p>
+                                    <p onClick={() => setUploadPostPopUp(true)} style={{ color: "#1877F2", fontWeight: "bolder", cursor: "pointer" }} >Share your first photo</p>
 
-
-
-                        ))}
-
+                                </div>
+                        }
                     </div>
-                    :
-                    <div style={{ display: "flex", gap: "15px", flexDirection: "column", alignItems: "center", }} >
-
-                        <div id={styles.cameraIcon}>
-                            <FontAwesomeIcon icon={faCamera} size="3x" />
-
-                        </div>
-
-                        <p style={{ fontSize: "25px", fontWeight: "bolder" }} >Share photos</p>
-                        <p >when you share photos ,they will appear on your profile</p>
-                        <p onClick={() => setUploadPostPopUp(true)} style={{ color: "#1877F2", fontWeight: "bolder", cursor: "pointer" }} >Share your first photo</p>
-
-                    </div>
-                 }
-                 </div>
 
                 }
 
 
-                {selectedOption === "SAVED"  && <div>NO SAVED</div>}
+                {selectedOption === "SAVED" && <div>NO SAVED</div>}
                 {selectedOption === "TAGGED" && <div>NO TAGGED</div>}
 
 
