@@ -22,6 +22,7 @@ function ChattedUser({ ResetEverythingOnDom }: ChattedProps) {
     async function handleEnableMessageTab(_: string, value: string) {
         const user: any = JSON.parse(value);
 
+        if (!profile) return;
         if (ResetEverythingOnDom) {
             ResetEverythingOnDom();
         }
@@ -60,6 +61,8 @@ function ChattedUser({ ResetEverythingOnDom }: ChattedProps) {
 
     }
 
+    if (!profile) return;
+
 
     return (
         <div style={{ gap: "20px" }} className={styles.MessagesContainer}>
@@ -97,7 +100,7 @@ function ChattedUser({ ResetEverythingOnDom }: ChattedProps) {
                     </div>
 
                 ))
-                
+
             }
 
 

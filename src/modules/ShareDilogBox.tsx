@@ -1,12 +1,12 @@
 import { X } from "lucide-react";
 import styles from "../Styling/ShareDilog.module.css";
 import { useEffect, useState } from "react";
-import { searchAccount } from "../Components/ToMessage";
 import { fetchSearchUser } from "../Scripts/FetchDetails";
 import messageStyles from "../Styling/ToMessage.module.css";
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
 import { useGeneralContext } from "../Context/GeneralContext";
 import { useNavigate } from "react-router-dom";
+import { searchAccount } from "../Interfaces";
 
 interface ShareDilogBoxPayload {
 

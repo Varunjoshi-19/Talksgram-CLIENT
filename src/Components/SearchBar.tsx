@@ -4,12 +4,12 @@ import {
     faSearch
 } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
-import { searchAccount } from "../Components/ToMessage";
 import { fetchSearchUser } from "../Scripts/FetchDetails";
 import { useNavigate } from "react-router-dom";
 
 import { useToogle } from "../Context/ToogleContext"
 import { MAIN_BACKEND_URL } from "../Scripts/URL";
+import { searchAccount } from "../Interfaces";
 
 function SearchBar() {
 
